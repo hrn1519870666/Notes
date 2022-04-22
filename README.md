@@ -14,7 +14,13 @@
 
 ## Go
 
-[标准库之net-http](https://github.com/hrn1519870666/Notes/blob/master/Go/%E6%A0%87%E5%87%86%E5%BA%93%E4%B9%8Bnet-http.md)
+[Go基础](https://github.com/hrn1519870666/Notes/blob/master/Go/Go%E5%9F%BA%E7%A1%80.md)
+
+[Go并发](https://www.liwenzhou.com/posts/Go/concurrence/)
+
+[标准库之net/http](https://github.com/hrn1519870666/Notes/blob/master/Go/%E6%A0%87%E5%87%86%E5%BA%93%E4%B9%8Bnet-http.md)
+
+标准库之net/rpc
 
 
 
