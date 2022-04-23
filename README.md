@@ -52,9 +52,9 @@ channel
 
 Servlet
 
-[Cookie和Session]()
+[Cookie和Session](https://github.com/hrn1519870666/Notes/blob/master/Java%20Web/%E8%AE%A4%E8%AF%81-%E6%8E%88%E6%9D%83-cookie-session.md)
 
-[RESTful API]()
+[RESTful API](https://github.com/hrn1519870666/Notes/blob/master/Java%20Web/Restful%20API.md)
 
 
 
