@@ -18,11 +18,12 @@
 
 [Go并发](https://www.liwenzhou.com/posts/Go/concurrence/)
 
-goroutine
+- goroutine
 
-channel
+- channel
 
-并发安全和锁
+- 并发安全和锁
+
 
 [标准库之net/http](https://github.com/hrn1519870666/Notes/blob/master/Go/%E6%A0%87%E5%87%86%E5%BA%93%E4%B9%8Bnet-http.md)
 
@@ -94,6 +95,8 @@ Dubbo/Zookeeper
 
 SpringCloud Alibaba
 
+Nginx
+
 
 
 ## 设计模式
@@ -109,5 +112,3 @@ SpringCloud Alibaba
 [docker](https://github.com/hrn1519870666/Notes/blob/master/%E6%A1%86%E6%9E%B6-%E4%B8%AD%E9%97%B4%E4%BB%B6-%E5%B7%A5%E5%85%B7/docker.pdf)
 
 K8S
-
-Nginx
