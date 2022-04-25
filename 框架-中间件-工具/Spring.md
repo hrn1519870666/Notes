@@ -314,7 +314,7 @@ MVC 是一种设计模式，Spring MVC 是一种 MVC 框架。它可以简化Web
 
 ### SpringBoot
 
-**Idea新建一个springboot项目之后可以删除的文件：**
+**Idea新建一个springboot项目之后可以删除的文件：**总共5个，mvn，git，HELP
 
 ![image-20220403103744962](C:\Users\黄睿楠\AppData\Roaming\Typora\typora-user-images\image-20220403103744962.png)
 
