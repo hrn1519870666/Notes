@@ -302,8 +302,6 @@ MVC 是一种设计模式，Spring MVC 是一种 MVC 框架。它可以简化Web
 
 01：2.3、SpringMVC执行原理
 
-03：RestFul 风格
-
 04：ModelAndView，数据处理
 
 08：拦截器

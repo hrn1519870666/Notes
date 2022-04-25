@@ -58,7 +58,7 @@ Servlet
 
 
 
-## 框架
+## 开发框架
 
 [Spring-SpringMVC-SpringBoot](https://github.com/hrn1519870666/Notes/blob/master/%E6%A1%86%E6%9E%B6-%E4%B8%AD%E9%97%B4%E4%BB%B6-%E5%B7%A5%E5%85%B7/Spring.md)
 
@@ -88,7 +88,7 @@ ElasticSearch
 
 ## 分布式与微服务
 
-Dubbo/Zookeeper
+Dubbo（集成Zookeeper）
 
 [SpringCloud Netflix](https://github.com/hrn1519870666/Notes/blob/master/%E6%A1%86%E6%9E%B6-%E4%B8%AD%E9%97%B4%E4%BB%B6-%E5%B7%A5%E5%85%B7/SpringCloud.md)
 

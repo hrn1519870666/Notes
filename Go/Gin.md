@@ -27,7 +27,7 @@ func main() {
 }
 ```
 
-将上面的代码保存并编译执行，然后使用浏览器打开`127.0.0.1:8080/hello`就能看到一串JSON字符串。
+编译执行，然后使用浏览器打开`127.0.0.1:8080/hello`就能看到一串JSON字符串。
 
 
 
@@ -39,13 +39,11 @@ func main() {
 
 ```go
 func main() {
-	//Default返回一个默认的路由引擎
 	r := gin.Default()
-	r.GET("/user/search", func(c *gin.Context) {
-		username := c.DefaultQuery("username", "小黄")
-		//username := c.Query("username")
+	r.GET("/user/search", func(c *gin.Context) {   //GET
+        username := c.Query("username")
+		//username := c.DefaultQuery("username", "小黄")
 		address := c.Query("address")
-		//输出json结果给调用方
 		c.JSON(http.StatusOK, gin.H{
 			"message":  "ok",
 			"username": username,
@@ -60,25 +58,23 @@ func main() {
 
 ### 获取form参数
 
-当前端请求的数据通过form表单提交时，例如向`/user/search`发送一个POST请求，获取请求数据的方式如下：
+当前端请求的数据通过form表单提交时，例如向`/user`发送一个POST请求，获取请求数据的方式如下：
 
 ```go
 func main() {
-	//Default返回一个默认的路由引擎
 	r := gin.Default()
-	r.POST("/user/search", func(c *gin.Context) {
+	r.POST("/user", func(c *gin.Context) {   // POST
 		// DefaultPostForm取不到值时会返回指定的默认值
 		//username := c.DefaultPostForm("username", "小黄")
 		username := c.PostForm("username")
 		address := c.PostForm("address")
-		//输出json结果给调用方
 		c.JSON(http.StatusOK, gin.H{
 			"message":  "ok",
 			"username": username,
 			"address":  address,
 		})
 	})
-	r.Run(":8080")
+	r.Run()
 }
 ```
 
@@ -94,8 +90,8 @@ Java：
 
 ```go
 func main() {
-	//Default返回一个默认的路由引擎
 	r := gin.Default()
+    // 注意冒号
 	r.GET("/user/search/:username/:address", func(c *gin.Context) {
 		username := c.Param("username")
 		address := c.Param("address")
@@ -113,13 +109,13 @@ func main() {
 
 Java：@PathVariable注解。
 
-### 获取json参数
+### 获取JSON参数
 
 当前端请求的数据通过JSON提交时，例如向`/json`发送一个POST请求，则获取请求参数的方式如下：
 
 ```go
-r.POST("/json", func(c *gin.Context) {
-	// 注意：下面为了举例子方便，暂时忽略了错误处理
+r.POST("/json", func(c *gin.Context) {   // POST
+	// 为了举例子方便，忽略了错误处理
 	b, _ := c.GetRawData()  // 从c.Request.Body读取请求数据
 	// 定义map或结构体
 	var m map[string]interface{}
@@ -132,10 +128,9 @@ r.POST("/json", func(c *gin.Context) {
 
 ### 参数绑定
 
-为了能够更方便的获取请求相关参数，提高开发效率，我们可以基于请求的`Content-Type`识别请求数据类型并利用反射机制自动提取请求中`QueryString`、`form表单`、`JSON`等参数到结构体中。 下面的示例代码演示了`.ShouldBind()`强大的功能，它能够基于请求自动提取`JSON`、`form表单`和`QueryString`类型的数据，并把值绑定到指定的结构体对象。
+为了能够更方便的获取请求相关参数，提高开发效率，我们可以基于请求的`Content-Type`识别请求数据类型并利用反射机制自动提取请求中`QueryString`、`form表单`、`JSON`等参数到结构体中。 下面的示例代码演示了`.ShouldBind()`强大的功能，它能够基于请求自动提取`QueryString`、`form表单`和`JSON`类型的数据，并把值绑定到指定的结构体对象。
 
 ```go
-// Binding from JSON
 type Login struct {
 	User     string `form:"user" json:"user" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
@@ -145,7 +140,7 @@ func main() {
 	router := gin.Default()
 
 	// 绑定JSON的示例 ({"user": "上黄", "password": "123456"})
-	router.POST("/loginJSON", func(c *gin.Context) {
+	router.POST("/loginJSON", func(c *gin.Context) {   // POST
 		var login Login
 
 		if err := c.ShouldBind(&login); err == nil {
@@ -160,7 +155,7 @@ func main() {
 	})
 
 	// 绑定form表单示例 (user=上黄&password=123456)
-	router.POST("/loginForm", func(c *gin.Context) {
+	router.POST("/loginForm", func(c *gin.Context) {   // POST
 		var login Login
 		// ShouldBind()会根据请求的Content-Type自行选择绑定器
 		if err := c.ShouldBind(&login); err == nil {
@@ -174,9 +169,8 @@ func main() {
 	})
 
 	// 绑定QueryString示例 (/loginQuery?user=上黄&password=123456)
-	router.GET("/loginForm", func(c *gin.Context) {
+	router.GET("/loginForm", func(c *gin.Context) {   // GET
 		var login Login
-		// ShouldBind()会根据请求的Content-Type自行选择绑定器
 		if err := c.ShouldBind(&login); err == nil {
 			c.JSON(http.StatusOK, gin.H{
 				"user":     login.User,
@@ -186,8 +180,6 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
 	})
-
-	// Listen and serve on 0.0.0.0:8080
 	router.Run(":8080")
 }
 ```
@@ -229,7 +221,7 @@ r.GET("/test2", func(c *gin.Context) {
 r.Any("/test", func(c *gin.Context) {...})
 ```
 
-为没有配置处理函数的路由添加处理程序，默认情况下它返回404代码，下面的代码为没有匹配到路由的请求都返回`views/404.html`页面。
+为没有配置处理函数的路由添加处理程序，默认情况下它返回404代码，而下面的代码为没有匹配到路由的请求都返回`views/404.html`页面。
 
 ```go
 r.NoRoute(func(c *gin.Context) {
@@ -239,7 +231,7 @@ r.NoRoute(func(c *gin.Context) {
 
 ### 路由组
 
-我们可以将拥有共同URL前缀的路由划分为一个路由组。习惯性一对`{}`包裹同组的路由，这只是为了看着清晰，你用不用`{}`包裹功能上没什么区别。
+我们可以将拥有共同URL前缀的路由划分为一个路由组。习惯性一对`{}`包裹同组的路由，这只是为了看着清晰，用不用`{}`包裹功能上没什么区别。
 
 ```go
 func main() {
@@ -261,9 +253,9 @@ func main() {
 }
 ```
 
-路由组支持嵌套。
-
 相当于在类上添加@RequestMapping("/user")
+
+路由组支持嵌套。
 
 
 
@@ -285,6 +277,7 @@ func StatCost() gin.HandlerFunc {
 		c.Next()
 		// 不调用该请求的剩余处理程序
 		// c.Abort()
+        
 		// 计算耗时
 		cost := time.Since(start)
 		log.Println(cost)
