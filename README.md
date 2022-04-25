@@ -82,9 +82,9 @@ ElasticSearch
 
 ## 分布式与微服务
 
-Dubbo（集成Zookeeper）
+[Dubbo集成Zookeeper](https://github.com/hrn1519870666/Notes/blob/master/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%8E%E5%BE%AE%E6%9C%8D%E5%8A%A1/Dubbo%E9%9B%86%E6%88%90Zookeeper.md)
 
-[SpringCloud Netflix](https://github.com/hrn1519870666/Notes/blob/master/%E6%A1%86%E6%9E%B6-%E4%B8%AD%E9%97%B4%E4%BB%B6-%E5%B7%A5%E5%85%B7/SpringCloud.md)
+[SpringCloud Netflix](https://github.com/hrn1519870666/Notes/blob/master/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%8E%E5%BE%AE%E6%9C%8D%E5%8A%A1/SpringCloud.md)
 
 SpringCloud Alibaba
 
