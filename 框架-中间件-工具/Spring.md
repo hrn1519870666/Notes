@@ -1,10 +1,10 @@
-### Spring
+## Spring
 
 **Spring是一个轻量级的控制反转(IoC)和面向切面(AOP)的容器（框架）。**
 
 
 
-#### IoC（控制反转）
+### IoC（控制反转）
 
 将原本在程序中手动创建对象的控制权，交由Spring的IoC容器来管理。**通俗理解：对象由Spring 来创建 , 管理 , 装配。 IoC 容器就像是一个工厂，当我们需要创建一个对象的时候，只需要配置好配置文件/注解即可，不用考虑对象是如何被创建出来的。** 
 
@@ -23,12 +23,16 @@ property 给对象中的属性赋值
 </bean>
 ```
 
+[IoC理论推导和本质](https://mp.weixin.qq.com/s?__biz=Mzg2NTAzMTExNg==&mid=2247484092&idx=1&sn=ab5bfb967cdd0b4268517e0339b12d61&scene=19#wechat_redirect)
 
 
-#### DI（依赖注入）
+
+### DI（依赖注入）
 
 - 依赖 : 指Bean对象的创建依赖于容器。
 - 注入 : 指Bean对象中的所有属性，由容器来注入。
+
+#### 使用XML注入属性
 
 1.常量注入
 
@@ -53,33 +57,35 @@ property 给对象中的属性赋值
  </bean>
 ```
 
-3.数组、List、Map等注入方式，见笔记03。
+3.数组、List、Map等注入方式，见笔记Spring03。
 
-
-
-**使用注解注入属性**
+#### 使用注解注入属性
 
 在属性上添加@value("值")
 
 ```java
-@Component("user")
 // 相当于配置文件中 <bean id="user" class="当前注解的类"/>
+@Component("user")
 public class User {
+    // 相当于配置文件中 <property name="name" value="秦疆"/>
    @Value("秦疆")
-   // 相当于配置文件中 <property name="name" value="秦疆"/>
    public String name;
 }
 ```
 
 
 
-#### AOP（面向切面编程）
+### AOP（面向切面编程）
 
-**AOP基于动态代理。**能够将那些与业务无关，**却为业务模块所共同调用的逻辑（例如事务处理、日志管理、权限控制等）封装起来**，便于**减少系统的重复代码**，**降低模块间的耦合度**。
+**AOP基于动态代理。**能够将那些与业务无关，**却为业务模块所共同调用的逻辑（例如事务处理、日志管理、权限控制等）封装起来**，便于**减少系统的重复代码，降低模块间的耦合度。**
+
+[静态代理和动态代理](https://mp.weixin.qq.com/s?__biz=Mzg2NTAzMTExNg==&mid=2247484130&idx=1&sn=73741a404f7736c02bcdf69f565fe094&scene=19#wechat_redirect)
+
+[AOP的实现方式（第一种和第三种）](https://mp.weixin.qq.com/s?__biz=Mzg2NTAzMTExNg==&mid=2247484138&idx=1&sn=9fb187c7a2f53cc465b50d18e6518fe9&scene=19#wechat_redirect)
 
 
 
-#### **Bean的作用域**
+### Bean的作用域
 
 bean就是由IoC容器初始化、装配及管理的对象。
 
@@ -88,11 +94,45 @@ bean就是由IoC容器初始化、装配及管理的对象。
 | singleton | 在Spring IoC容器中仅存在一个Bean实例，Bean以单例方式存在，默认值 |
 | prototype | 每次从容器中调用Bean时，都返回一个新的实例，即每次调用getBean()时，相当于执行new XxxBean() |
 
+#### Singleton
+
+当一个bean的作用域为Singleton，那么Spring IoC容器中只会存在一个共享的bean实例，并且所有对bean的请求，只要id与该bean定义相匹配，则只会返回bean的同一实例。Singleton是单例类型，就是在创建起容器时就同时自动创建了一个bean的对象，不管你是否使用，他都存在了，每次获取到的对象都是同一个对象。注意，Singleton作用域是Spring中的缺省作用域。要在XML中将bean定义成singleton，可以这样配置：
+
+```
+ <bean id="ServiceImpl" class="cn.csdn.service.ServiceImpl" scope="singleton">
+```
+
+测试：
+
+```
+ @Test
+ public void test03(){
+     ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+     User user = (User) context.getBean("user");
+     User user2 = (User) context.getBean("user");
+     System.out.println(user==user2);
+ }
+```
+
+#### Prototype
+
+当一个bean的作用域为Prototype，表示一个bean定义对应多个对象实例。Prototype作用域的bean会导致在每次对该bean请求（将其注入到另一个bean中，或者以程序的方式调用容器的getBean()方法）时都会创建一个新的bean实例。Prototype是原型类型，它在我们创建容器的时候并没有实例化，而是当我们获取bean的时候才会去创建一个对象，而且我们每次获取到的对象都不是同一个对象。根据经验，对有状态的bean应该使用prototype作用域，而对无状态的bean则应该使用singleton作用域。在XML中将bean定义成prototype，可以这样配置：
+
+```
+ <bean id="account" class="com.foo.DefaultAccount" scope="prototype"/>  
+  或者
+ <bean id="account" class="com.foo.DefaultAccount" singleton="false"/>
+```
 
 
-**配置Bean的方式：XML，注解，Config配置类。**
 
-#### 将一个类声明为Spring的 bean 的注解有哪些?
+### 配置Bean的方式
+
+XML，注解，Config配置类。
+
+
+
+### 将一个类声明为Spring的 bean 的注解有哪些?
 
 **@Component和它的三个衍生注解：**
 
@@ -104,7 +144,7 @@ bean就是由IoC容器初始化、装配及管理的对象。
 
 
 
-#### **基于Config配置类进行配置**
+### 基于Config配置类进行配置
 
 1.实体类：
 
@@ -132,35 +172,6 @@ public class MyConfig {
 }
 ```
 
-
-
-#### **@Autowired**
-
-默认使用的是byType的方式注入相应的Bean。例如：
-
-```java
-@Autowired
-private UserService userService;
-```
-
-这段代码会在初始化的时候，在spring容器中寻找一个类型为UserService的bean实体注入，关联到userService的引入上。
-
-可以结合@Qualifier注解实现byName的方式：
-
-```java
-@Autowired
-@Qualifier(value = "userService2")
-private UserService userService3;
-```
-
-
-
-
-#### @Component 和 @Bean 的区别？
-
-1. 作用对象不同: `@Component` 注解作用于类，而`@Bean`注解作用于方法。
-3. `@Bean` 注解比 `Component` 注解的自定义性更强，而且很多地方我们只能通过 `@Bean` 注解来注册bean。比如当我们引用第三方库中的类需要装配到 `Spring`容器时，则只能通过 `@Bean`来实现。
-
 `@Bean`注解使用示例：
 
 ```java
@@ -184,7 +195,36 @@ public class AppConfig {
 
 
 
-#### Spring 中的 bean 生命周期?
+
+### @Component 和 @Bean 的区别？
+
+1. 作用对象不同: `@Component` 注解作用于类，而`@Bean`注解作用于方法。
+3. `@Bean` 注解比 `Component` 注解的自定义性更强，而且很多地方我们只能通过 `@Bean` 注解来注册bean。比如当我们引用第三方库中的类需要装配到 `Spring`容器时，则只能通过 `@Bean`来实现。
+
+
+
+### @Autowired
+
+**默认使用的是byType的方式注入相应的Bean。**例如：
+
+```java
+@Autowired
+private UserService userService;
+```
+
+这段代码会在初始化的时候，在spring容器中寻找一个类型为UserService的bean实体注入，关联到userService的引入上。
+
+可以结合@Qualifier注解实现byName的方式：
+
+```java
+@Autowired
+@Qualifier(value = "userService2")
+private UserService userService2;
+```
+
+
+
+### Spring 中的 bean 生命周期?
 
 - Bean 容器找到配置文件中 Spring Bean 的定义。
 - Bean 容器利用 Java Reflection API 创建一个Bean的实例。
@@ -195,17 +235,17 @@ public class AppConfig {
 - 如果有和加载这个 Bean 的 Spring 容器相关的 `BeanPostProcessor` 对象，执行`postProcessBeforeInitialization()` 方法
 - 如果Bean实现了`InitializingBean`接口，执行`afterPropertiesSet()`方法。
 - 如果 Bean 在配置文件中的定义包含  init-method 属性，执行指定的方法。
-- 如果有和加载这个 Bean的 Spring 容器相关的 `BeanPostProcessor` 对象，执行`postProcessAfterInitialization()` 方法
+- 如果有和加载这个 Bean的 Spring 容器相关的 `BeanPostProcessor` 对象，执行`postProcessAfterInitialization()` 方法。
 - 当要销毁 Bean 的时候，如果 Bean 实现了 `DisposableBean` 接口，执行 `destroy()` 方法。
 - 当要销毁 Bean 的时候，如果 Bean 在配置文件中的定义包含 destroy-method 属性，执行指定的方法。
 
 
 
-#### Spring 框架中用到了哪些设计模式？
+### Spring 框架中用到了哪些设计模式？
 
+- **单例设计模式** : Spring 中的 Bean 默认都是单例的。
 - **工厂设计模式** : Spring使用工厂模式通过 `BeanFactory`、`ApplicationContext` 创建 bean 对象。
 - **代理设计模式** : Spring AOP 功能的实现。
-- **单例设计模式** : Spring 中的 Bean 默认都是单例的。
 - **包装器设计模式** : 我们的项目需要连接多个数据库，而且不同的客户在每次访问中根据需要会去访问不同的数据库。这种模式让我们可以根据客户的需求能够动态切换不同的数据源。
 - **观察者模式:** Spring 事件驱动模型就是观察者模式很经典的一个应用。
 - **适配器模式** :Spring AOP 的增强或通知(Advice)使用到了适配器模式、spring MVC 中也是用到了适配器模式适配`Controller`。
@@ -213,7 +253,7 @@ public class AppConfig {
 
 
 
-#### Spring 事务中哪几种事务传播行为?
+### Spring 事务中哪几种事务传播行为?
 
 **支持当前事务的情况：**
 
@@ -233,7 +273,7 @@ public class AppConfig {
 
 
 
-**补充：import标签**
+### 补充：import标签
 
 可以将多个配置文件导入合并为一个，使用时用总的配置。
 
@@ -247,18 +287,6 @@ public class AppConfig {
 
 
 
-**笔记重点：**
-
-01：IOC理论推导~结束
-
-03：Bean的作用域（在最后）
-
-06：静态/动态代理（理解思想即可，代码实现不用深究）
-
-07：什么是AOP，第一种和第三种使用方式
-
-
-
 **视频重点：**
 
 3，4，5，19（动态代理）
@@ -267,11 +295,9 @@ public class AppConfig {
 
 
 
+## Spring MVC
 
-
-### Spring MVC
-
-#### 说说自己对于 Spring MVC 的了解?
+### 说说对于 Spring MVC 的了解?
 
 MVC 是一种设计模式，Spring MVC 是一种 MVC 框架。它可以简化Web层的开发。在Spring MVC 下我们一般把后端项目分为 Service层（处理业务）、Dao层（数据库操作）、Entity层（实体类）、Controller层(控制层，返回数据给前台页面)。
 
@@ -281,9 +307,9 @@ MVC 是一种设计模式，Spring MVC 是一种 MVC 框架。它可以简化Web
 
 
 
-#### SpringMVC 工作原理
+### SpringMVC 工作原理
 
-![image-20220403114619393](C:\Users\黄睿楠\AppData\Roaming\Typora\typora-user-images\image-20220403114619393.png)
+<a href="https://sm.ms/image/chKOue2fqmnBR91" target="_blank"><img src="https://s2.loli.net/2022/04/25/chKOue2fqmnBR91.png" ></a>
 
 **流程说明（重要）：**
 
@@ -298,29 +324,23 @@ MVC 是一种设计模式，Spring MVC 是一种 MVC 框架。它可以简化Web
 
 
 
-**笔记重点：**
+[结果跳转方式和数据处理](https://mp.weixin.qq.com/s?__biz=Mzg2NTAzMTExNg==&mid=2247483998&idx=1&sn=97c417a2c1484d694c761a2ad27f217d&scene=19#wechat_redirect)
 
-01：2.3、SpringMVC执行原理
 
-04：ModelAndView，数据处理
 
-08：拦截器
+[拦截器](https://mp.weixin.qq.com/s?__biz=Mzg2NTAzMTExNg==&mid=2247484026&idx=1&sn=eba24b51963e8c3293d023cbcf3318dc&scene=19#wechat_redirect)
 
 
 
 
 
+## SpringBoot
 
-
-### SpringBoot
-
-**Idea新建一个springboot项目之后可以删除的文件：**总共5个，mvn，git，HELP
-
-![image-20220403103744962](C:\Users\黄睿楠\AppData\Roaming\Typora\typora-user-images\image-20220403103744962.png)
+**Idea新建一个springboot项目之后可以删除的文件：**总共5个，3个mvn，git，HELP
 
 
 
-**自动装配：**
+### 自动装配
 
 springboot所有自动配置都是在启动时扫描并加载：所有的自动类都在`spring.factories`里面，但不一定生效，需要判断条件是否成立，只要导入了对应的starter，就有对应的启动器了，自动装配就会生效。
 
@@ -334,10 +354,16 @@ springboot所有自动配置都是在启动时扫描并加载：所有的自动�
 
 
 
-**笔记重点：**
+[运行原理初探](https://mp.weixin.qq.com/s?__biz=Mzg2NTAzMTExNg==&mid=2247483743&idx=1&sn=431a5acfb0e5d6898d59c6a4cb6389e7&scene=19#wechat_redirect)
 
-02，05（自动装配原理）
 
-03：yaml注入配置文件
 
-18：SpringSecurity
+[自动配置原理](https://mp.weixin.qq.com/s?__biz=Mzg2NTAzMTExNg==&mid=2247483766&idx=1&sn=27739c5103547320c505d28bec0a9517&scene=19#wechat_redirect)
+
+
+
+[yaml注入配置文件](https://mp.weixin.qq.com/s?__biz=Mzg2NTAzMTExNg==&mid=2247483744&idx=1&sn=b4ec762e71b2ddf9403c035635299206&scene=19#wechat_redirect)
+
+
+
+[SpringSecurity](https://mp.weixin.qq.com/s?__biz=Mzg2NTAzMTExNg==&mid=2247483957&idx=1&sn=fc30511490b160cd1519e7a7ee3d4ed0&scene=19#wechat_redirect)
