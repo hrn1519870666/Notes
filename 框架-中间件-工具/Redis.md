@@ -50,7 +50,7 @@ Memcached 不支持分布式，只能通过在客户端使用一致性哈希来�
 #### string
 
 1. **介绍** ：string 数据结构是简单的 key-value 类型。 
-2. **应用场景：** 常用在需要**计数**的场景，比如**用户的访问次数、热点文章的点赞转发数量。**
+2. **应用场景：** 常用在需要**计数**的场景，比如**用户的访问次数、热点文章的点赞、转发数量。**
 3. **常用命令:** `set,get,strlen,exists,incr,setnx,getset` 等等。
 
 **普通字符串的基本操作：**
@@ -105,7 +105,7 @@ OK
 
 ，Redis-server维护了一个字典，字典的键是一个个频道，值是一个链表，链表中保存了所有订阅这个频道的客户端。客户端通过SUBSCRIBE命令订阅某频道，就是将客户端添加到指定频道的订阅链表中。
 
-![image.png](https://i.loli.net/2020/12/11/AcIqOSE3nyplQKM.png)
+<img src="https://i.loli.net/2020/12/11/AcIqOSE3nyplQKM.png" alt="image.png" style="zoom:50%;" />
 
 
 
@@ -120,11 +120,11 @@ OK
 
 
 ```bash
-127.0.0.1:6379> rpush myList value1 # 向 list 的头部（右边）添加元素
+127.0.0.1:6379> rpush myList value1 # 向list的右边添加元素
 (integer) 1
-127.0.0.1:6379> rpush myList value2 value3 # 向list的头部（最右边）添加多个元素
+127.0.0.1:6379> rpush myList value2 value3 # 向list的右边添加多个元素
 (integer) 3
-127.0.0.1:6379> lpop myList # 将 list的尾部(最左边)元素取出
+127.0.0.1:6379> lpop myList # 将 list的最左边元素取出
 "value1"
 127.0.0.1:6379> lrange myList 0 1 # 查看对应下标的list列表， 0 为 start,1为 end
 1) "value2"
@@ -154,12 +154,13 @@ OK
 
 #### hash
 
-1. **介绍** ：hash 是一个 string 类型的 field 和 value 的映射表，**适合用于存储对象， 比如存储用户信息，商品信息等。**
+1. **介绍** ：hash 的key是string类型，value 是一个映射表，**适合用于存储对象， 比如存储用户信息，商品信息等。**
 2. **应用场景:** **系统中对象数据的存储。**
-3. **常用命令：** `hset,hexists,hget,hgetall,hkeys,hvals` 等。
+3. **常用命令：** `hset,hget,hgetall,hkeys,hvals,hexists` 等。
 
 ```bash
 # 双引号可加可不加，Redis会自动识别类型
+#hmset:同时将多个“域-值”对存储在key键中，如果key不存在会自动创建，如果field已经存在，则会覆盖原来的值。操作成功后返回值OK。
 127.0.0.1:6379> hmset userInfoKey name "guide" description "dev" age "24"
 OK
 127.0.0.1:6379> hexists userInfoKey name # 查看 key 对应的 value中指定的字段是否存在。 
@@ -189,15 +190,21 @@ OK
 3. **常用命令：** `sadd,spop,smembers,sismember,scard,sinterstore,sunion` 等。
 
 ```bash
-127.0.0.1:6379> sadd mySet value1 value2 # 添加元素进去(integer) 2
-127.0.0.1:6379> sadd mySet value1 # 不允许有重复元素(integer) 0
+127.0.0.1:6379> sadd mySet value1 value2 # 添加元素进去
+(integer) 2
+127.0.0.1:6379> sadd mySet value1 # 不允许有重复元素
+(integer) 0
 127.0.0.1:6379> smembers mySet # 查看 set 中所有的元素
 1) "value1"
 2) "value2"
-127.0.0.1:6379> scard mySet # 查看 set 的长度(integer) 2
-127.0.0.1:6379> sismember mySet value1 # 检查某个元素是否存在set 中，只能接收单个元素(integer) 1
-127.0.0.1:6379> sadd mySet2 value2 value3(integer) 2
-127.0.0.1:6379> sinterstore mySet3 mySet mySet2 # 获取 mySet 和 mySet2 的交集并存放在 mySet3 中(integer) 1
+127.0.0.1:6379> scard mySet # 查看 set 的长度
+(integer) 2
+127.0.0.1:6379> sismember mySet value1 # 检查某个元素是否存在set 中，只能接收单个元素
+(integer) 1
+127.0.0.1:6379> sadd mySet2 value2 value3
+(integer) 2
+127.0.0.1:6379> sinterstore mySet3 mySet mySet2 # 获取 mySet 和 mySet2 的交集并存放在 mySet3 中
+(integer) 1
 127.0.0.1:6379> smembers mySet3
 1) "value2"
 ```
@@ -211,12 +218,15 @@ OK
 3. **常用命令：** `zadd,zcard,zscore,zrange,zrevrange,zrem` 等。
 
 ```bash
-127.0.0.1:6379> zadd myZset 3.0 value1 # 添加元素到 sorted set 中 3.0 为权重(integer) 1
-127.0.0.1:6379> zadd myZset 2.0 value2 1.0 value3 # 一次添加多个元素(integer) 2
-127.0.0.1:6379> zcard myZset # 查看 sorted set 中的元素数量(integer) 3
+127.0.0.1:6379> zadd myZset 3.0 value1 # 添加元素到 sorted set 中，3.0 为权重
+(integer) 1
+127.0.0.1:6379> zadd myZset 2.0 value2 1.0 value3 # 一次添加多个元素
+(integer) 2
+127.0.0.1:6379> zcard myZset # 查看 sorted set 中的元素数量
+(integer) 3
 127.0.0.1:6379> zscore myZset value1 # 查看某个 value 的权重
 "3"
-127.0.0.1:6379> zrange  myZset 0 -1 # 顺序输出某个范围区间的元素，0 -1 表示输出所有元素
+127.0.0.1:6379> zrange  myZset 0 -1 # 顺序（从小到大）输出某个范围区间的元素，0 -1 表示输出所有元素
 1) "value3"
 2) "value2"
 3) "value1"
@@ -232,49 +242,42 @@ OK
 
 ### Redis 单线程模型详解
 
-**Redis 基于 Reactor 模式来设计开发了自己的一套高效的事件处理模型** （Netty 的线程模型也基于 Reactor 模式，Reactor 模式不愧是高性能 IO 的基石），这套事件处理模型对应的是 Redis 中的文件事件处理器（file event handler）。由于文件事件处理器（file event handler）是单线程方式运行的，所以我们一般都说 Redis 是单线程模型。
+Redis 内部使用文件事件处理器 `file event handler` ，这个文件事件处理器是单线程的，所以 Redis 才叫做单线程的模型。它采用 IO 多路复用机制同时监听多个 socket，将产生事件的 socket 压入内存队列中，事件分派器根据 socket 上的事件类型来选择对应的事件处理器进行处理。
 
-**既然是单线程，那怎么监听大量的客户端连接呢？**
+文件事件处理器的结构包含 4 个部分：
 
-Redis 通过**IO 多路复用程序** 来监听来自客户端的大量连接（或者说是监听多个 socket），它会将感兴趣的事件及类型(读、写）注册到内核中并监听每个事件是否发生。
+- 多个 socket
+- IO 多路复用程序
+- 文件事件分派器
+- 事件处理器（连接应答处理器、命令请求处理器、命令回复处理器）
 
-这样的好处非常明显： **I/O 多路复用技术的使用让 Redis 不需要额外创建多余的线程来监听客户端的大量连接，降低了资源的消耗**（和 NIO 中的 `Selector` 组件很像）。
+多个 socket 可能会并发产生不同的操作，每个操作对应不同的文件事件，但是 IO 多路复用程序会监听多个 socket，会将产生事件的 socket 放入队列中排队，事件分派器每次从队列中取出一个 socket，根据 socket 的事件类型交给对应的事件处理器进行处理。
 
-另外， Redis 服务器是一个事件驱动程序，服务器需要处理两类事件： 1. 文件事件; 2. 时间事件。
+<img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/12a665a86cab41b4909ecb7464292bb9~tplv-k3u1fbpfcp-zoom-1.image" style="zoom: 67%;" />
 
-时间事件不需要多花时间了解，我们接触最多的还是 **文件事件**（客户端进行读取写入等操作，涉及一系列网络通信）。
 
-《Redis 设计与实现》有一段话是如是介绍文件事件的，我觉得写得挺不错。
 
-> Redis 基于 Reactor 模式开发了自己的网络事件处理器：这个处理器被称为文件事件处理器（file event handler）。文件事件处理器使用 I/O 多路复用（multiplexing）程序来同时监听多个套接字，并根据 套接字目前执行的任务来为套接字关联不同的事件处理器。
->
-> 当被监听的套接字准备好执行连接应答（accept）、读取（read）、写入（write）、关 闭（close）等操作时，与操作相对应的文件事件就会产生，这时文件事件处理器就会调用套接字之前关联好的事件处理器来处理这些事件。
->
-> **虽然文件事件处理器以单线程方式运行，但通过使用 I/O 多路复用程序来监听多个套接字**，文件事件处理器既实现了高性能的网络通信模型，又可以很好地与 Redis 服务器中其他同样以单线程方式运行的模块进行对接，这保持了 Redis 内部单线程设计的简单性。
+### 为什么 Redis 单线程模型也能效率这么高？
 
-可以看出，文件事件处理器（file event handler）主要是包含 4 个部分：
-
-* 多个 socket（客户端连接）
-* IO 多路复用程序（支持多个客户端连接的关键）
-* 文件事件分派器（将 socket 关联到相应的事件处理器）
-* 事件处理器（连接应答处理器、命令请求处理器、命令回复处理器）
-
-![](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/12a665a86cab41b4909ecb7464292bb9~tplv-k3u1fbpfcp-zoom-1.image)
+1. 纯内存操作。
+2. 核心是基于非阻塞的 IO 多路复用机制。
+3. 单线程反而避免了多线程的频繁上下文切换问题，预防了多线程可能产生的竞争问题。
+4. C 语言实现，一般来说，C 语言实现的程序“距离”操作系统更近，执行速度相对会更快。
 
 
 
 ### Redis 为什么不使用多线程？
 
 1. 多线程就会存在线程上下文切换、死锁等问题，会影响性能。
-2. Redis 的性能瓶颈不在 CPU ，主要在内存和网络。Redis将所有的数据放在内存中，使用单线程去操作效率最高。
+2. **Redis 的性能瓶颈不在 CPU ，主要在内存和网络。**使用多线程模型带来的性能提升并不能抵消它带来的开发成本和维护成本。
 
 
 
 ### Redis6.0 之后为何引入了多线程？
 
-**Redis6.0 引入多线程主要是为了提高网络 IO 读写性能**，因为这个算是 Redis 中的一个性能瓶颈。
+**Redis6.0 引入多线程主要是为了提高网络 IO 读写性能**，因为这个算是 Redis 中的一个性能瓶颈。读写网络的 Read/Write 系统调用在 Redis 执行期间占用了大部分 CPU 时间，如果把网络读写做成多线程的方式对性能会有很大提升。
 
-虽然，Redis6.0 引入了多线程，但是 Redis 的多线程只是在网络数据的读写这类耗时操作上使用了， 执行命令仍然是单线程顺序执行。因此，你也不需要担心线程安全问题。
+虽然，Redis6.0 引入了多线程，但是 Redis 的多线程只是在网络数据的读写这类耗时操作上使用了， 执行命令仍然是单线程顺序执行。因此，也不需要担心线程安全问题。
 
 
 
@@ -288,10 +291,15 @@ Redis 通过**IO 多路复用程序** 来监听来自客户端的大量连接（
 
 ### 过期数据的删除策略
 
-1. **定期删除** ： 每隔一段时间抽取一批 key 执行删除过期key操作。对内存更加友好。
-1. **惰性删除** ：只在取出key的时候才对数据进行过期检查。这样对CPU最友好，但是可能会造成太多过期 key 没有被删除。
+**定期删除** ： 每隔一段时间**随机抽取**一批设置了过期时间的 key 执行删除过期key操作（不是遍历所有的设置过期时间的 key，那样cpu 负载会很高）。对内存更加友好。
+
+**惰性删除** ：只在取出key的时候才对数据进行过期检查，如果key过期就删除，不返回任何东西。这样对CPU最友好，但是可能会造成太多过期 key 没有被删除。
+
+定期删除可能会导致很多过期 key 到了时间并没有被删除掉，所以要依靠惰性删除。
 
 Redis 采用的是 **定期删除+惰性/懒汉式删除** 。
+
+如果定期删除漏掉了很多过期 key，然后也没及时去查，也就没走惰性删除，导致大量过期 key 堆积在内存里， Redis 内存块耗尽。这时就要依靠内存淘汰机制。
 
 
 
@@ -303,7 +311,7 @@ Redis 提供 6 种数据淘汰策略：
 
 1. **volatile-lru**：从**已设置过期时间**的数据集中挑选**最近最久未使用**的数据淘汰。
 2. **volatile-ttl**：从**已设置过期时间**的数据集中挑选**将要过期**的数据淘汰。
-3. **volatile-random**：从**已设置过期时间**的数据集中**任意**选择数据淘汰。
+3. **volatile-random**：从**已设置过期时间**的数据集中**任意**选择数据淘汰，一般不用。
 4. **allkeys-lru**：**在键空间中，移除最近最久未使用的 key。这个是最常用的。**
 5. **allkeys-random**：从数据集中任意选择数据淘汰。
 6. **no-eviction**：禁止驱逐数据，也就是说当内存不足以容纳新写入数据时，新写入操作会报错。一般不用。
@@ -340,7 +348,7 @@ Redis 可以通过创建快照来获得存储在内存里面的数据在某个�
 
 **日志持久化AOF（append-only file）**
 
-以日志的形式来记录Redis执行过得每个写操作，Redis重启时就根据日志文件的内容将写指令按顺序执行一次，来完成数据的恢复工作。
+以日志的形式来记录Redis执行过的每个写操作，Redis重启时就根据日志文件的内容将写指令按顺序执行一次，来完成数据的恢复工作。
 
 在 Redis 的配置文件中存在三种不同的 AOF 持久化方式，它们分别是：
 
@@ -352,7 +360,7 @@ appendfsync no        #让操作系统决定何时进行同步
 
 为了兼顾数据和写入性能，用户可以考虑 appendfsync everysec 选项 ，让 Redis 每秒同步一次 AOF 文件，Redis 性能几乎没受到任何影响。而且这样即使出现系统崩溃，用户最多只会丢失一秒之内产生的数据。
 
-**缺点：**aof的文件大小远大于rdb，修复的速度也比 rdb慢。
+**缺点：**aof的文件大小远**大于**rdb，修复的速度也比 rdb慢。
 
 
 
@@ -449,8 +457,8 @@ QUEUED
 
 当一个元素加入布隆过滤器中时：
 
-1. 使用布隆过滤器中的哈希函数对元素值进行计算，得到哈希值。
-2. 根据得到的哈希值，在位数组中把对应下标的值置为 1。
+1. 使用**布隆过滤器中的哈希函数**对元素值进行计算，得到哈希值。
+2. 根据得到的哈希值，在**位数组**中把对应下标的值置为 1。
 
 判断一个元素是否存在于布隆过滤器时：
 
@@ -467,9 +475,11 @@ QUEUED
 
 #### 解决办法
 
-**1.设置热点数据永不过期**
+1. 若缓存的数据基本不会发生更新，可以**设置热点数据永不过期。**
+2. 若缓存的数据更新不频繁，且缓存刷新的整个流程耗时较少，可以加**分布式锁：**保证对于每个key同时只有一个线程去查询后端服务，其他线程没有获得分布式锁的权限，只能等待。
+3. 若缓存的数据更新频繁或者缓存刷新的流程耗时较长，可以利用**定时线程在缓存过期前主动地重新构建缓存或者延后缓存的过期时间，以保证所有的请求能一直访问到对应的缓存。**
 
-**2.加分布式锁：**保证对于每个key同时只有一个线程去查询后端服务，其他线程没有获得分布式锁的权限，只能等待。
+
 
 ### 缓存雪崩
 
@@ -487,9 +497,9 @@ QUEUED
 
 **1.针对 Redis 服务不可用的情况：**
 
-​	采用 Redis 集群。
+​	采用 主从+哨兵或者Redis 集群。
 
-​	限流。在缓存失效后，通过加锁或者队列来控制读数据库写缓存的线程数量。比如对于某个key，只允许一个线	程查询数据和写缓存，其他线程等待。
+​	限流。通过加锁或者队列来控制读数据库写缓存的线程数量。比如对于某个key，只允许一个线	程查询数据和	写缓存，其他线程等待。或者采用 hystrix 实现限流和降级。
 
 **2.针对热点缓存失效的情况：**设置不同的失效时间比如随机设置缓存的失效时间。
 
@@ -499,20 +509,35 @@ QUEUED
 
 
 
-### 哨兵模式
+### Redis 主从架构（读高并发）
 
-主从切换技术：当主服务器宕机后，需要手动把一台从服务器切为主服务器，需要人工干预，费事费力。
+[![Redis-master-slave](https://github.com/doocs/advanced-java/raw/main/docs/high-concurrency/images/redis-master-slave.png)](https://github.com/doocs/advanced-java/blob/main/docs/high-concurrency/images/redis-master-slave.png)
+
+#### Redis主从复制的核心机制
+
+- Redis 采用**异步方式**复制数据到 slave 节点；
+- 一个 master node 可以配置多个 slave node，slave node 也可以连接其他的 slave node；
+- slave node 做复制的时候，不会 block master node 的正常工作，也不会 block 对自己的查询操作，它会用旧的数据集来提供服务；但是复制完成的时候，需要删除旧数据集，加载新数据集，这个时候就会暂停对外服务了；
+- slave node 主要用来进行横向扩容，做读写分离，扩容的 slave node 可以提高读的吞吐量。
 
 
-哨兵（Sentinel）模式：能够后台监控主机是否故障，如果故障了根据投票数自动将从库转换为主库。哨兵通过发送命令，等待Redis服务器响应，从而监控运行的多个Redis服务器。
+
+redis 实现高并发主要依靠主从架构，单主用来写入数据，单机几万 QPS，多从用来查询数据，多个从实例可以提供每秒 10w 的 QPS。如果想要在实现高并发的同时，容纳大量的数据，那么就需要 redis 集群，使用 redis 集群之后，可以提供每秒几十万的读写并发。
+
+
+
+### 主备切换+哨兵模式（高可用）
+
+一个 slave 挂掉了不会影响可用性，还有其它的 slave 在提供相同数据下的查询服务。但是，如果 master node 挂掉就无法写数据了。
+
+哨兵（Sentinel）有两个作用：
+
+1. 通过发送命令，等待Redis服务器响应，从而监控运行的多个Redis服务器（主机和从机都监控）。
+2. 当哨兵监测到master宕机时，会自动将slave切换成master，然后通过发布订阅模式通知其他的从服
+   务器切换主机。
 
 <img src="https://i.loli.net/2020/12/11/sYjzKWD3mJ9C7UB.png" alt="image.png" style="zoom: 67%;" />
 
-哨兵有两个作用：
-
-1. 通过发送命令，让Redis服务器返回其运行状态。
-2. 当哨兵监测到master宕机时，会自动将slave切换成master，然后通过发布订阅模式通知其他的从服
-   务器切换主机。
 
 
 **多哨兵模式：**各个哨兵之间还会进行监控。
@@ -524,6 +549,32 @@ QUEUED
 
 如果主机先断开后重连回来，只能归到新的主机下，当做从机。
 
+哨兵模式**不保证数据零丢失**，只能保证 Redis 集群的高可用性。
 
+
+
+### Redis 哨兵主备切换的数据丢失问题
+
+#### 导致数据丢失的两种情况
+
+主备切换的过程，可能会导致数据丢失：
+
+- 异步复制导致的数据丢失
+
+因为 master->slave 的复制是异步的，所以可能有部分数据还没复制到 slave，master 就宕机了，此时这部分数据就丢失了。
+
+[![async-replication-data-lose-case](https://github.com/doocs/advanced-java/raw/main/docs/high-concurrency/images/async-replication-data-lose-case.png)](https://github.com/doocs/advanced-java/blob/main/docs/high-concurrency/images/async-replication-data-lose-case.png)
+
+- 脑裂导致的数据丢失
+
+脑裂，也就是说，某个 master 所在机器突然**脱离了正常的网络**，跟其他 slave 机器不能连接，但是实际上 master 还运行着。此时哨兵可能就会**认为** master 宕机了，然后开启选举，将其他 slave 切换成了 master。这个时候，集群里就会有两个 master ，也就是所谓的**脑裂**。
+
+此时虽然某个 slave 被切换成了 master，但是可能 client 还没来得及切换到新的 master，还继续向旧 master 写数据。因此旧 master 再次恢复的时候，会被作为一个 slave 挂到新的 master 上去，自己的数据会清空，重新从新的 master 复制数据。而新的 master 并没有后来 client 写入的数据，因此，这部分数据也就丢失了。
+
+[![Redis-cluster-split-brain](https://github.com/doocs/advanced-java/raw/main/docs/high-concurrency/images/redis-cluster-split-brain.png)](https://github.com/doocs/advanced-java/blob/main/docs/high-concurrency/images/redis-cluster-split-brain.png)
 
 狂神说Redis视频重点：P22   Redis实现乐观锁
+
+
+
+[缓存与数据库的双写一致性](https://github.com/doocs/advanced-java/blob/main/docs/high-concurrency/redis-consistence.md)
