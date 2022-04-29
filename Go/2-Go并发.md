@@ -281,25 +281,24 @@ import (
 // Producer 返回一个接收通道
 // 并持续将符合条件的数据发送至返回的通道中
 // 数据发送完成后会将返回的通道关闭
-func Producer() <-chan int {
+func Producer() <-chan int {   // 返回值类型是一个只接收通道
 	ch := make(chan int, 2)
 	// 创建一个新的goroutine执行发送数据的任务
-	go func() {
+	go func() {   // go
 		for i := 0; i < 10; i++ {
 			if i%2 == 1 {
 				ch <- i
 			}
 		}
 		close(ch) // 任务完成后关闭通道
-	}()
-
+	}()   // 末尾有括号
 	return ch
 }
 
 // Consumer 参数为接收通道
 func Consumer(ch <-chan int) int {
 	sum := 0
-	for v := range ch {
+	for v := range ch {   //
 		sum += v
 	}
 	return sum

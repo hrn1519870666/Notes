@@ -83,6 +83,8 @@ List<String> list = new ArrayList<>();
 List<String> synList = Collections.synchronizedList(list);
 ```
 
+Collections是一个集合类，Collection是一个接口，其实现类有List，Set等。
+
 **使用 concurrent 并发包下的 CopyOnWriteArrayList 类。**
 
 ```java
