@@ -284,3 +284,8 @@ JDK 1.7 使用分段锁机制来实现并发更新操作，核心类为 Segment�
 
 ![Java8 ConcurrentHashMap 存储结构（图片来自 javadoop）](https://guide-blog-images.oss-cn-shenzhen.aliyuncs.com/source-code/dubbo/java8_concurrenthashmap.png)
 
+
+
+### HashSet的底层是HashMap，为什么前者存储的是一个元素，而后者存储的是KV键值对？
+
+HashSet底层确实是一个HashMap，存储的值放在HashMap的key里，value存储了一个PRESENT的静态Object对象。
