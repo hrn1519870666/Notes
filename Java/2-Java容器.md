@@ -25,33 +25,13 @@ ArrayList 是**基于数组实现的，数组的默认大小为 10，**支持快
 
 #### 2. 扩容
 
-新容量的大小为 `oldCapacity + (oldCapacity >> 1)`，即 oldCapacity+oldCapacity/2。其中 oldCapacity >> 1 需要取整，所以**新容量大约是旧容量的 1.5 倍左右。**（oldCapacity 为偶数就是 1.5 倍，为奇数就是 1.5 倍-0.5）
+**新容量大约是旧容量的 1.5 倍左右。**（oldCapacity 为偶数就是 1.5 倍，为奇数就是 1.5 倍-0.5）
 
 **扩容操作需要调用 `Arrays.copyOf()` 把原数组整个复制到新数组中**，这个操作代价很高，因此最好在创建 ArrayList 对象时就指定大概的容量大小，减少扩容操作的次数。
 
 #### 3. 删除元素
 
 需要调用 System.arraycopy() 将 index+1 后面的元素都复制到 index 位置上，该操作的时间复杂度为 O(n)，可以看到 ArrayList 删除元素的代价是非常高的。
-
-#### 4. Fail-Fast和Fail-Safe
-
-**fail-fast：**快速失败。当异常产生时，直接抛出异常，程序终止。
-
-当我们在遍历集合元素的时候，经常会使用迭代器，但在迭代器遍历元素的过程中，如果集合的结构被改变的话，就会抛出异常ConcurrentModificationException，防止继续遍历。这就是所谓的快速失败机制。这里说的结构被改变,是例如插入和删除这种操作,只是改变集合里的值的话并不会抛出异常。
-
-原理：在遍历的时候使用modCount变量，集合在被遍历的过程中，如果内容发生变化，则modCount就会发生改变。每次迭代器遍历下一个元素之前，就会先比较modCount是否与expectedModCount相等，expectedModCount默认值等于开始遍历时的集合元素个数，如果是就返回遍历，不是的话就抛出异常。
-
-**fail-safe：**安全失败
-
-采用安全失败机制的集合容器，在遍历时不是直接在集合内容上访问，而是**先复制原有集合内容，在拷贝的集合上进行遍历。**
-
-原理：由于迭代时是对原集合的拷贝进行遍历，所以在遍历过程中对原集合所作的修改并不能被迭代器检测到，所以不会触发ConcurrentModificationException。
-
-优缺点：基于拷贝内容的优点是避免了ConcurrentModificationException，但同样地，迭代器遍历的是开始遍历那一刻拿到的集合拷贝，在遍历期间原集合发生的修改，迭代器是不知道的。
-
-
-
-**迭代器：**提供一种访问集合对象各个元素的途径，同时又不需要暴露该对象的内部细节。java通过提供Iterator和Iterable俩个接口来实现集合类的可迭代性，迭代器主要的用法是：首先用hasNext（）作为循环条件，再用next（）方法得到每一个元素，最后进行相关的操作。
 
 
 
@@ -72,7 +52,7 @@ ArrayList 是**基于数组实现的，数组的默认大小为 10，**支持快
 
 #### 2. 扩容
 
-**Vector 的构造函数可以传入 capacityIncrement 参数，它的作用是在扩容时使容量 capacity 增长 capacityIncrement。**如果这个参数的值小于等于 0，扩容时每次都令 capacity 为原来的**两倍。**
+**Vector 的构造函数可以传入 capacityIncrement 参数，它的作用是在扩容时使容量增长 capacityIncrement。**如果这个参数的值小于等于 0，扩容时每次都令 capacity 为原来的**两倍。**
 
 #### 3. 线程安全的替代方案
 
@@ -85,7 +65,7 @@ List<String> synList = Collections.synchronizedList(list);
 
 Collections是一个集合类，Collection是一个接口，其实现类有List，Set等。
 
-**使用 concurrent 并发包下的 CopyOnWriteArrayList 类。**
+**使用 JUC 下的 CopyOnWriteArrayList 类。**
 
 ```java
 List<String> list = new CopyOnWriteArrayList<>();
@@ -162,7 +142,7 @@ static class Entry<K,V> implements Map.Entry<K,V> {
 
 **步骤：**
 
-1. 计算 key 的 hash 值，通过hash&(table.length-1)计算应当存放在数组中的下标 index;
+1. **计算 key 的 hash 值，**通过hash&(table.length-1)计算应当存放在数组中的下标 index;
 2. 查看 table[index] 是否存在数据，没有数据就构造一个Node节点存放在 table[index] 中；
 3. 存在数据，说明发生了hash冲突, 继续判断key是否相等，若相等，用新的value替换原数据；
 4. 若不相等，判断当前节点类型是不是树型节点，如果是树型节点，创造树型节点插入红黑树中；
@@ -194,10 +174,10 @@ map.put("K3", "V3");
 
 #### 3. 扩容
 
-和扩容相关的参数主要有：capacity、size、threshold 和 load_factor。
+和扩容相关的参数主要有：capacity、size、threshold 和 loadFactor。
 
 | 参数 | 含义 |
-| :--: | :-- |
+| :--: | :-: |
 | capacity | table 的容量大小，默认为 16。需要注意的是 capacity 必须保证为 2 的 n 次方。|
 | size | 键值对数量。 |
 | threshold | size 的临界值，当 size 大于等于 threshold 就必须进行扩容操作。 |
@@ -207,7 +187,7 @@ map.put("K3", "V3");
 
 #### 4. 重新计算桶下标
 
-在进行扩容时，需要把键值对重新计算桶下标，从而放到对应的桶上。**HashMap capacity 为 2 的 n 次方这一特点能够极大降低重新计算桶下标操作的复杂度。**
+在进行扩容时，需要重新计算桶下标，从而放到对应的桶上。**HashMap capacity 为 2 的 n 次方这一特点能够极大降低重新计算桶下标操作的复杂度。**
 
 假设原数组长度 capacity 为 16，扩容之后 new capacity 为 32：
 
@@ -243,7 +223,7 @@ new capacity : 00100000
 
 #### 1. 存储结构
 
-ConcurrentHashMap 和 HashMap 实现上类似，最主要的差别是 ConcurrentHashMap 采用了分段锁（Segment），**每个分段锁维护着几个桶（HashEntry），多个线程可以同时访问不同分段锁上的桶，从而使其并发度更高（并发度就是 Segment 的个数）。**默认的并发级别为 16，也就是说默认创建 16 个 Segment。
+ConcurrentHashMap 和 HashMap 实现上类似，最主要的差别是 ConcurrentHashMap 采用了分段锁（Segment），**每个分段锁维护着几个桶（HashEntry），多个线程可以同时访问不同分段锁上的桶，从而使其并发度更高（并发度就是分段锁的个数）。**默认的并发级别为 16，也就是说默认创建 16 个 Segment。
 
 #### 2. size 操作
 
@@ -255,7 +235,7 @@ ConcurrentHashMap 在执行 size 操作时先尝试不加锁，如果连续两�
 
 #### 3. JDK 1.8 的改动
 
-JDK 1.7 使用分段锁机制来实现并发更新操作，核心类为 Segment，JDK 1.8 使用了 CAS 操作来支持更高的并发度，在 CAS 操作失败时使用内置锁 synchronized，并且 JDK 1.8 的实现也在链表过长时会转换为红黑树。
+JDK 1.7 使用分段锁机制来实现并发更新操作，核心类为 Segment，JDK 1.8 使用了 CAS 操作来支持更高的并发度，在 CAS 操作失败时使用 synchronized，并且 JDK 1.8 的实现也在链表过长时会转换为红黑树。
 
 
 
@@ -272,7 +252,7 @@ JDK 1.7 使用分段锁机制来实现并发更新操作，核心类为 Segment�
 ### ConcurrentHashMap 和 Hashtable 的区别
 
 - **底层数据结构：** JDK1.7 的 `ConcurrentHashMap` 底层采用 **分段数组+链表** 实现，JDK1.8 采用的数据结构跟 `HashMap1.8` 的结构一样，数组+链表/红黑二叉树。`Hashtable` 是采用 **数组+链表** 的形式。
-- **实现线程安全的方式（重要）：** ① **在 JDK1.7 的时候，`ConcurrentHashMap`（分段锁）** 对整个桶数组进行了分割分段，每一把锁只锁容器其中一部分数据，多线程访问容器里不同数据段的数据，就不会存在锁竞争，提高并发访问率。 **到了 JDK1.8 的时候摒弃了 `Segment` 的概念，而是直接用 `Node` 数组+链表+红黑树的数据结构来实现，并发控制使用 `synchronized` 和 CAS 来操作。（JDK1.6 以后 对 `synchronized` 锁做了很多优化）** 整个看起来就像是优化过且线程安全的 `HashMap`。② **`Hashtable`** 使用 `synchronized` 来保证线程安全，效率非常低下。当一个线程访问同步方法时，若其他线程也访问同步方法，可能会进入阻塞或轮询状态，如使用 put 添加元素，另一个线程不能使用 put 添加元素，也不能使用 get。
+- **实现线程安全的方式（重要）：** ① **在 JDK1.7 的时候，`ConcurrentHashMap`（分段锁）** 对整个桶数组进行了分割分段，每一把锁只锁容器中的一部分数据，多线程访问容器里不同数据段的数据，就不会存在锁竞争，提高并发访问率。 **到了 JDK1.8 的时候摒弃了 `Segment` 的概念，而是直接用 `Node` 数组+链表+红黑树的数据结构来实现，并发控制使用 `synchronized` 和 CAS 来操作，** 整个看起来就像是优化过且线程安全的 `HashMap`。② **`Hashtable`** 使用 `synchronized` 来保证线程安全，效率非常低下。当一个线程访问同步方法时，若其他线程也访问同步方法，可能会进入阻塞或轮询状态，如使用 put 添加元素，另一个线程不能使用 put 添加元素，也不能使用 get。
 
 **JDK1.7 的 ConcurrentHashMap：**
 
@@ -289,3 +269,25 @@ JDK 1.7 使用分段锁机制来实现并发更新操作，核心类为 Segment�
 ### HashSet的底层是HashMap，为什么前者存储的是一个元素，而后者存储的是KV键值对？
 
 HashSet底层确实是一个HashMap，存储的值放在HashMap的key里，value存储了一个PRESENT的静态Object对象。
+
+
+
+### Fail-Fast和Fail-Safe
+
+**fail-fast：**快速失败。当异常产生时，直接抛出异常，程序终止。
+
+当我们在遍历集合元素的时候，经常会使用迭代器，但在迭代器遍历元素的过程中，如果集合的结构被改变的话，就会抛出异常`ConcurrentModificationException`，防止继续遍历。这就是所谓的快速失败机制。这里说的结构被改变,是例如插入和删除这种操作,只是改变集合里的值的话并不会抛出异常。
+
+原理：在遍历的时候使用modCount变量，集合在被遍历的过程中，如果内容发生变化，则modCount就会发生改变。每次迭代器遍历下一个元素之前，就会先比较modCount是否与expectedModCount相等，expectedModCount默认值等于开始遍历时的集合元素个数，如果是就返回遍历，不是的话就抛出异常。
+
+**fail-safe：**安全失败
+
+采用安全失败机制的集合容器，在遍历时不是直接在集合内容上访问，而是**先复制原有集合内容，在拷贝的集合上进行遍历。**
+
+原理：由于迭代时是对原集合的拷贝进行遍历，所以在遍历过程中对原集合所作的修改并不能被迭代器检测到，所以不会触发ConcurrentModificationException。
+
+优缺点：基于拷贝内容的优点是避免了ConcurrentModificationException，但同样地，迭代器遍历的是开始遍历那一刻拿到的集合拷贝，在遍历期间原集合发生的修改，迭代器是不知道的。
+
+
+
+**迭代器：**提供一种访问集合对象各个元素的途径，同时又不需要暴露该对象的内部细节。java通过提供Iterator和Iterable俩个接口来实现集合类的可迭代性，迭代器主要的用法是：首先用hasNext（）作为循环条件，再用next（）方法得到每一个元素，最后进行相关的操作。

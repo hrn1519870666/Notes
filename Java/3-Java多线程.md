@@ -1,8 +1,8 @@
 ### 进程和线程?
 
-进程是程序的一次执行过程，是系统运行程序的基本单位，因此进程是动态的。系统运行一个程序即是一个进程从创建，运行到消亡的过程。
+进程是**程序的一次执行过程，**是系统运行程序的基本单位，因此进程是**动态**的。系统运行一个程序就是一个进程从创建，运行到消亡的过程。
 
-线程是一个比进程更小的执行单位。进程在其执行的过程中可以产生多个线程。**同类的多个线程**共享进程的**堆**和**方法区**资源，但每个线程有自己的**程序计数器**、**虚拟机栈**和**本地方法栈**，所以系统在**产生一个线程，或是在各个线程之间切换时，开销要比进程小得多。**进程作为**资源分配**的基本单位，线程作为**资源调度**的基本单位。
+线程是一个比进程更小的执行单位。进程在其执行的过程中可以产生多个线程。**同类的多个线程**共享进程的**堆**和**方法区**资源，但每个线程有自己的**程序计数器**、**虚拟机栈**和**本地方法栈**，所以系统在**产生一个线程，或是在各个线程之间切换时，开销要比进程小得多（同一进程的不同线程之间切换，不消耗资源）。**进程作为**资源分配**的基本单位，线程作为**资源调度**的基本单位。
 
 
 
@@ -26,11 +26,11 @@ Java 线程状态变迁如下图所示
 
 上下文切换通常是计算密集型的。也就是说，它需要相当可观的处理器时间，在每秒几十上百次的切换中，每次切换都需要纳秒量级的时间。所以，上下文切换对系统来说意味着消耗大量的 CPU 时间，事实上，可能是操作系统中时间消耗最大的操作。
 
-Linux 相比与其他操作系统（包括其他类 Unix 系统）有很多的优点，其中有一项就是，其上下文切换和模式切换的时间消耗非常少。
+Linux 相比与其他操作系统，其上下文切换和模式切换的时间消耗非常少。
 
 
 
-### 为什么我们调用 start() 方法时会执行 run() 方法，为什么我们不能直接调用 run() 方法？
+### 为什么调用 start() 方法时会执行 run() 方法，为什么不能直接调用 run() 方法？
 
 new 一个 Thread，线程进入了新建状态。调用 `start()`方法，会启动一个线程并使线程进入了就绪状态，当分配到时间片后就可以开始运行了。 `start()` 会执行线程的相应准备工作，然后自动执行 `run()` 方法的内容，这是真正的多线程工作。 但是，直接执行 `run()` 方法，会把 `run()` 方法当成一个 main 线程下的普通方法去执行，并不会在某个线程中执行它，所以这并不是多线程工作。
 
@@ -38,7 +38,7 @@ new 一个 Thread，线程进入了新建状态。调用 `start()`方法，会�
 
 
 
-### 写一个死锁的例子
+### 死锁的例子
 
 ```java
 public class DeadLock {
@@ -57,11 +57,11 @@ public class DeadLock {
                     try {
                         Thread.sleep(100);
                     }catch (Exception e){
- 
+                        e.printStackTrace();
                     }
- 
+ 					// 在synchronized (t1)代码块内部，执行synchronized (t2)
                     synchronized (t2){
-                        System.out.println("Thread2 get t2");
+                        System.out.println("Thread1 get t2");
                     }
                 }
             }
@@ -77,7 +77,7 @@ public class DeadLock {
                     try {
                         Thread.sleep(100);
                     }catch (Exception e){
- 
+                        e.printStackTrace();
                     }
  
                     synchronized (t1){
@@ -110,7 +110,7 @@ Thread2 get t2
                 try {
                     Thread.sleep(100);
                 }catch (Exception e){
- 
+                    e.printStackTrace();
                 }
  
                 synchronized (t2){
@@ -138,7 +138,7 @@ Thread2 get t2
 ### sleep() 方法和 wait() 方法区别?
 
 - **`sleep()` 方法没有释放锁，而 `wait()` 方法释放了锁** 。
-- `sleep()`方法可以在任何地方使用；`wait()`方法则只能在同步方法或同步块中使用；
+- `sleep()`方法可以在任何地方使用；`wait()`方法则只能在**同步方法或同步块**中使用；
 - `sleep()`方法执行完成后，线程会自动苏醒。或者可以使用 `wait(long timeout)` 超时后线程会自动苏醒。`wait()` 方法被调用后，线程不会自动苏醒，需要别的线程调用同一个对象上的 `notify()`或者 `notifyAll()` 方法。
 
 
@@ -151,7 +151,7 @@ Thread2 get t2
 
 ##### **1. 同步一个代码块**  
 
-同步代码块可以选择以什么来加锁，比同步方法要更细颗粒度，我们可以选择只同步会发生同步问题的部分代码而不是整个方法。
+同步代码块可以选择以什么来加锁，比同步方法要更细颗粒度，我们可以选择只同步会发生同步问题的部分代码，而不是整个方法。
 
 ```java
 public void func() {
@@ -161,14 +161,14 @@ public void func() {
 }
 ```
 
-**它只作用于同一个对象，如果调用两个对象上的同步代码块，就不会进行同步。**
+**它只作用于同一个对象，同一个类的不同对象拥有自己的锁，如果调用两个对象上的同步代码块，就不会进行同步。**
 
-对于以下代码，使用 ExecutorService 执行了两个线程，由于调用的是同一个对象的同步代码块，因此这两个线程会进行同步，当一个线程进入同步语句块时，另一个线程就必须等待。
+对于以下代码，使用 ExecutorService 执行了两个线程，由于调用的是同一个对象的同步代码块，这两个线程会进行同步，当一个线程进入同步语句块时，另一个线程就必须等待。
 
 ```java
 public class SynchronizedExample {
 
-    public void func1() {
+    public void func() {
         synchronized (this) {
             for (int i = 0; i < 10; i++) {
                 System.out.print(i + " ");
@@ -182,8 +182,8 @@ public class SynchronizedExample {
 public static void main(String[] args) {
     SynchronizedExample e1 = new SynchronizedExample();
     ExecutorService executorService = Executors.newCachedThreadPool();
-    executorService.execute(() -> e1.func1());
-    executorService.execute(() -> e1.func1());
+    executorService.execute(() -> e1.func());
+    executorService.execute(() -> e1.func());
 }
 ```
 
@@ -198,8 +198,8 @@ public static void main(String[] args) {
     SynchronizedExample e1 = new SynchronizedExample();
     SynchronizedExample e2 = new SynchronizedExample();
     ExecutorService executorService = Executors.newCachedThreadPool();
-    executorService.execute(() -> e1.func1());
-    executorService.execute(() -> e2.func1());
+    executorService.execute(() -> e1.func());
+    executorService.execute(() -> e2.func());
 }
 ```
 
@@ -216,6 +216,8 @@ Java通过 对象.方法 的形式调用方法，锁的就是点之前的对象�
 ##### **3. 同步一个类**  
 
 以类对象为锁，进入同步代码块前需要获得当前类对象的锁。
+
+不是在类上加synchronized，而是锁代码块：
 
 ```java
 public void func() {
@@ -256,21 +258,27 @@ public static void main(String[] args) {
 
 ##### **4.同步一个静态方法：作用于整个类。**
 
+**注意：**
+
+1. 使用使用synchronized修饰实例对象时，如果一个线程正在访问实例对象的一个synchronized方法时，其它线程不仅不能访问该synchronized方法，该对象的其它synchronized方法也不能访问，因为**一个对象只有一个监视器锁对象，**但是其它线程可以访问该对象的非synchronized方法。
+2. 使用synchronized修饰类和对象时，由于类对象和实例对象分别拥有自己的监视器锁，因此不会相互阻塞。
+3. 线程A访问实例对象的非static但synchronized方法时，线程B也可以同时访问实例对象的static synchronized方法，因为前者获取的是实例对象的监视器锁，而后者获取的是类对象的监视器锁，两者不存在互斥关系。
+
 
 
 #### 底层原理
 
 #####  修饰代码块的情况
 
-**`synchronized` 修饰代码块时，使用的是 `monitorenter` 和 `monitorexit` 指令，其中 `monitorenter` 指令指向同步代码块的开始位置，`monitorexit` 指令则指明结束位置。**
+`synchronized` 修饰代码块时，使用的是 **`monitorenter` 和 `monitorexit` 指令，其中 `monitorenter` 指令指向同步代码块的开始位置，`monitorexit` 指令则指明结束位置。**
 
 **在执行`monitorenter`时，会尝试获取对象的锁，如果锁的计数器为 0 则表示锁可以被获取，获取后将锁计数器设为 1 也就是加 1。在执行 `monitorexit` 指令后，将锁计数器设为 0，表明锁被释放。**
 
-如果获取对象锁失败，那当前线程就要阻塞等待，直到锁被另外一个线程释放为止。
+如果获取对象锁失败，当前线程就要阻塞等待，直到锁被另外一个线程释放为止。
 
 #####  修饰方法的的情况
 
-**`synchronized` 修饰方法时，使用的是`ACC_SYNCHRONIZED` 标识，该标识指明了该方法是一个同步方法。在进入该方法之前先获取相应的锁，锁的计数器加1，方法结束后计数器减1。**如果获取失败就阻塞，直到该锁被释放。
+`synchronized` 修饰方法时，使用的是**`ACC_SYNCHRONIZED` 标识，该标识指明了该方法是一个同步方法。在进入该方法之前先获取相应的锁，锁的计数器加1，方法结束后计数器减1。**如果获取失败就阻塞，直到该锁被释放。
 
 
 
@@ -295,7 +303,7 @@ Lock是具体类，是API层面的锁（java.util.）
 
 sychronized不需要手动释放锁，当synchronized代码执行完后系统会自动让线程释放对锁的占用。
 
-ReentrantLock则需要手动释放锁，若没有主动释放锁，可能导致死锁，需要lock()和 unlock()方法配合try/finally语句块来完成。
+ReentrantLock需要手动释放锁，若没有主动释放锁，可能导致死锁，需要lock()和 unlock()方法配合try/finally语句块来完成。
 
 **3.等待可中断**  
 
@@ -305,13 +313,13 @@ ReentrantLock 可中断，而 synchronized 不行。
 
 **4. 公平锁**  
 
-synchronized 中的锁是非公平的（通过CAS来抢占锁资源），ReentrantLock 默认情况下也是非公平的，但是也可以是公平的。
+synchronized 中的锁是非公平的，ReentrantLock 默认情况下也是非公平的，但是也可以是公平的。
 
 **5. 锁绑定多个条件**  
 
-一个 ReentrantLock 可以同时绑定多个 Condition 对象。ReentrantLock用来实现分组唤醒需要要唤醒的线程们，可以精确唤醒，而不是像synchronized要么随机 唤醒一个线程要么唤醒全部线程。
+一个 ReentrantLock 可以同时绑定多个 Condition 对象。ReentrantLock用来实现精确唤醒，而不是像synchronized要么随机唤醒一个线程，要么唤醒全部线程。
 
-**对线程之间按顺序调用，实现A>B>C三个线程启动，要求如下： A打印5次，B打印10次，C打印15次 * 紧接着A打印5次，B打印10次，C打印15次...循环10轮。**
+**对线程之间按顺序调用，实现A>B>C三个线程启动，要求如下： A打印5次，B打印10次，C打印15次，紧接着A打印5次，B打印10次，C打印15次...循环10轮。**
 
 ```java
 public class SyncAndReentrantLockDemo {
@@ -412,52 +420,41 @@ class ShareData {
 
 **使用选择**
 
-除非需要使用 ReentrantLock 的高级功能，否则优先使用 synchronized。这是因为 synchronized 是 JVM 实现的锁机制，JVM 原生地支持它，而 ReentrantLock 不是所有的 JDK 版本都支持。并且使用 synchronized 不用担心没有释放锁而导致死锁问题，因为 JVM 会确保锁的释放。
+除非需要使用 ReentrantLock 的高级功能，否则优先使用 synchronized。因为 synchronized 是 JVM 实现的锁机制，JVM 原生地支持它，而 ReentrantLock 不是所有的 JDK 版本都支持。并且使用 synchronized 不用担心没有释放锁而导致死锁问题，因为 JVM 会确保锁的释放。
 
 
 
-#### synchronized升级（膨胀）过程
-
-https://blog.csdn.net/tongdanping/article/details/79647337
+#### synchronized锁升级（膨胀）过程
 
 在JDK 1.6之前是重量级锁，依赖底层操作系统的 mutex 相关指令实现，所以会有用户态和内核态之间的切换，性能损耗十分明显。而JDK1.6 以后引入偏向锁和轻量级锁在JVM层面实现加锁的逻辑，不依赖底层操作系统。从此以后锁的状态就有了四种，级别由低到高依次为：无锁、偏向锁、轻量级锁、重量级锁。四种状态会随着竞争的情况逐渐升级，而且是不可逆的过程。
 
-##### 无锁
-
-无锁是指没有对资源进行锁定，所有的线程都能访问并修改同一个资源，但同时只有一个线程能修改成功。
-线程会不断的尝试修改共享资源，如果没有冲突就修改成功并退出，否则就会继续循环尝试。如果有多个线程修改同一个值，必定会有一个线程能修改成功，而其他修改失败的线程会不断重试直到修改成功。
+<a href="https://sm.ms/image/NygYkjAG67atvUw" target="_blank"><img src="https://s2.loli.net/2022/05/04/NygYkjAG67atvUw.png" ></a>
 
 ##### 偏向锁
 
-偏向锁指的就是JVM会认为只有一个线程执行同步代码（没有竞争的环境），所以在Mark Word会直接记录线程ID，只要线程来执行代码，就会比对线程ID是否相等，相等则当前线程能直接获取得到锁，如果不相等，则用CAS来尝试修改当前的线程ID，如果CAS修改成功，那还是能获取得到锁，如果CAS失败了，说明有竞争环境，此时会对偏向锁撤销，升级为轻量级锁。
+线程A初次执行到synchronized代码块的时候，锁对象从无锁变成偏向锁（通过CAS修改对象头里的锁标志位）。执行完同步代码块后，线程A并不会主动释放偏向锁，也就是说，对象头中一直保存着线程A的ID。当某个线程第二次到达同步代码块时，它会判断此时持有锁的线程是否就是自己（比较当前线程的threadID和Java对象头中的threadID是否一致），如果是则正常往下执行，由于之前没有释放锁，这里也就不需要重新加锁。如果不是，则说明此时是另一个线程B，在竞争锁对象，需要升级为轻量级锁。轻量级锁的获取及释放依赖多次 CAS 原子指令，而偏向锁只需要在置换 ThreadID 的时候依赖一次 CAS 原子指令即可。
+
+优点：当一段同步代码一直被同一个线程所访问时，即不存在多个线程的竞争，那么该线程在后续访问时便会自动获得锁，从而降低获取锁带来的消耗，提高性能。
 
 ##### 轻量级锁（自旋锁）
 
 一旦有第二个线程加入锁竞争，偏向锁就升级为轻量级锁。其他线程会通过自旋的形式尝试获取锁，线程不会阻塞，从而提高性能。
 
+在轻量级锁状态下继续锁竞争，没有抢到锁的线程将自旋，即不停地循环判断锁是否能够被成功获取。获取锁的操作，其实就是通过CAS修改对象头里的锁标志位。先比较当前锁标志位是否为“释放”，如果是则将其设置为“锁定”，代表抢锁成功，然后线程将当前锁的持有者信息修改为自己。
+
 ##### 重量级锁
 
 忙等是有限度的（计数器记录自旋次数，默认允许循环10次）。如果锁竞争情况严重，达到最大自旋次数的线程，会将轻量级锁升级为重量级锁（依然是CAS修改锁标志位，但不修改持有锁的线程ID）。当后续线程尝试获取锁时，发现被占用的锁是重量级锁，则直接进入阻塞状态（而不是忙等），等待将来被唤醒。
-
-##### 各种锁的适用场景
-
-只有一个线程进入临界区，偏向锁。
-
-**多个线程交替进入临界区，轻量级锁。**
-
-**多线程同时进入临界区，重量级锁。**
 
 
 
 #### synchronized为什么是非公平锁？
 
-偏向锁：如果当前线程ID与markword存储的不相等，则CAS尝试更换线程ID，CAS成功就获取得到锁，CAS失败则升级为轻量级锁。
+偏向锁和轻量级锁：都有CAS操作，也就是线程都会尝试获取锁。
 
-轻量级锁：通过CAS来抢占锁资源（只不过多了拷贝Mark Word到Lock Record的过程），抢占成功到锁就归属给该线程，但自旋失败一定次数后升级重量级锁。
+重量级锁：通过monitor对象中的队列存储线程，但线程进入队列前，还是会先尝试获取锁，如果能获取不到才进入线程等待队列中。
 
-重量级锁：通过monitor对象中的队列存储线程，但线程进入队列前，还是会先尝试获取得到锁，如果能获取不到才进入线程等待队列中。
-
-综上所述，synchronized无论处理哪种锁，都是先尝试获取，获取不到才升级或者进入队列，所以是非公平的。
+综上所述，synchronized无论处理哪种锁，都是先尝试获取，所以是非公平的。
 
 
 
@@ -495,13 +492,13 @@ volatile是Java虚拟机提供的轻量级的同步机制。
 
 #### 1.保证可见性
 
-JMM规定，线程对变量的操作（读取赋值等）必须在工作内存中进行，首先概要将变量从主内存拷贝到自己的工作内存空间，然后对变量进行操作，操作完成后再将变量写回主内存，不能直接操作主内存中的变量，各个线程中的工作内存中存储着主内存的**变量副本拷贝。**
+JMM规定，线程对变量的操作（读取赋值等）必须在工作内存中进行。首先将变量从主内存拷贝到自己的工作内存，然后对变量进行操作，操作完成后再将变量写回主内存，不能直接操作主内存中的变量，各个线程中的工作内存中存储着主内存的**变量副本拷贝。**
 
 <a href="https://sm.ms/image/Vd28Ub6kmOpWrIc" target="_blank"><img src="https://s2.loli.net/2022/04/29/Vd28Ub6kmOpWrIc.png" style="zoom:33%;"  ></a>
 
 
 
-这就可能导致线程在主存中修改了一个变量的值，而另外一个线程还继续使用它在寄存器中的变量值的拷贝，造成**数据的不一致**。要解决这个问题，就需要把变量声明为`volatile`来保证可见性。可见性是一种及时通知机制，当多个线程访问同一个变量时，一个线程修改了这个变量的值，当它写回主内存时，立刻将这次修改通知给其他线程（其他线程能够立即看到修改的值）。
+这就可能导致线程在主内存中修改了一个变量的值，而另外一个线程还继续使用它在本地内存（寄存器）中的变量值的拷贝，造成**数据的不一致**。要解决这个问题，就需要把变量声明为`volatile`来保证可见性。可见性是一种及时通知机制，当多个线程访问同一个变量时，一个线程修改了这个变量的值，当它写回主内存时，立刻将这次修改通知给其他线程，其他线程能够立即看到修改的值。
 
 `volatile`保证可见性的原理：告诉 JVM，这个变量是共享且不稳定的，每次使用它都到主存中进行读取。
 
@@ -511,7 +508,7 @@ JMM规定，线程对变量的操作（读取赋值等）必须在工作内存�
 
 #### 2.不保证原子性
 
-原因：线程在各自的工作内存中将变量修改之后，在写回主内存时发生了写覆盖。
+原因：线程在各自的工作内存中将变量修改之后，在写回主内存时可能发生写覆盖。
 
 
 
@@ -557,14 +554,14 @@ public class Singleton {
  private volatile static Singleton uniqueInstance;
 ```
 
-原理：
+**原理：**
 
 内存屏障（Memory Barrier）又称内存栅栏，是一个CPU指令，他的作用有两个：
 
 1. 保证特定操作的执行顺序
 2. 保证某些变量的内存可见性（利用该特性实现volatile的内存可见性）
 
-编译器和处理器都能执行指令重排优化。如果在指令间插入一条Memory Barrier，则会告诉编译器和CPU， 不管什么指令都不能和这条Memory Barrier指令重排顺序，也就是说**通过插入内存屏障禁止在内存屏障前后的指令执行重排序优化。**内存屏障另外一个作用是强制刷出各种CPU的缓存数据，因此任何CPU上的线程都能读取到这些数据的最新版本。
+编译器和处理器都能执行指令重排优化。如果在指令间插入一条Memory Barrier，则会告诉编译器和CPU， 不管什么指令都不能和这条Memory Barrier指令重排顺序，也就是说**通过插入内存屏障，禁止在内存屏障前后的指令执行重排序优化。**内存屏障另外一个作用是强制刷出各种CPU的缓存数据，因此任何CPU上的线程都能读取到这些数据的最新版本。
 
 <a href="https://sm.ms/image/UGf4MWxl9sA1akX" target="_blank"><img src="https://s2.loli.net/2022/04/30/UGf4MWxl9sA1akX.png" ></a>
 
@@ -588,7 +585,7 @@ CAS的全称为compare and swap，比较并交换。比较当前工作内存中�
 
 #### CAS应用
 
-CAS有3个操作数，内存值V，预期值A，要修改的更新值B。如果预期值A和更新值B相等，则将内存值V修改为B，否则进行循环比较，直到相等为止。
+CAS有3个操作数，内存值V，预期值A，要修改的更新值B。如果预期值A和内存值V相等，则将内存值V修改为新值B，否则进行循环比较，直到相等为止。
 
 #### 底层原理
 
@@ -596,7 +593,7 @@ CAS是一条CPU并发原语（简称原语），底层靠unsafe类保证原子�
 
 Unsafe 是CAS核心类，由于Java方法无法直接访问底层系统，需要通过本地（native）方法来访问，Unsafe相当 于一个后门，基于该类可以直接操作特定内存数据。Unsafe类存在于 sun.misc 包中，其内部方法操作可以像C的指针一样直接操作内存。**Java中CAS操作的执行依赖于Unsafe类的方法，Unsafe类中的所有方法都是native修饰的，也就是说Unsafe类中的方法都直接调用操作系统底层资源执行相应任务。**
 
-CAS并发原语体现在JAVA语言中就是Unsafe类中各个方法。调用Unsafe类中的CAS方法，JVM会帮我们实现CAS汇编指令。这是一种完全依赖于硬件的功能，通过他实现了原子操作。由于CAS是一种系统原语，原语属于操作系统用语范畴，是由若干条指令组成的，用于完成某个功能的一个过程，并且原语的执行必须是连续的，在执行过程中不允许被中断，也就是说CAS是一条CPU的原子指令，不会造成数据不一致问题（线程安全）。
+CAS并发原语体现在JAVA语言中就是Unsafe类中各个方法。调用Unsafe类中的CAS方法，JVM会帮我们实现CAS汇编指令。这是一种完全依赖于硬件的功能，通过他实现了原子操作。CAS是一种系统原语，原语属于操作系统用语范畴，是由若干条指令组成的，用于完成某个功能的一个过程，并且原语的执行必须是连续的，在执行过程中不允许被中断，也就是说CAS是一条CPU的原子指令，不会造成数据不一致问题（线程安全）。
 
 以下代码使用了 AtomicInteger 执行了自增的操作。
 
@@ -608,15 +605,15 @@ public void add() {
 }
 ```
 
-以下代码是getAndIncrement() 的源码，它调用了 Unsafe 的 getAndAddInt() 。
+以下代码是getAndIncrement() 的源码，它调用了Unsafe类的 getAndAddInt() 。
 
 ```java
 public final int getAndIncrement() {
-    return unsafe.getAndAddInt(this, valueOffset, 1) + 1;
+    return unsafe.getAndAddInt(this, valueOffset, 1);
 }
 ```
 
-以下代码是 getAndAddInt() 源码，var1 指示对象内存地址，var2 指示该字段相对对象内存地址的偏移，var4 指示操作需要加的数值，这里为 1。通过 getIntVolatile(var1, var2) 得到旧的预期值，通过调用 compareAndSwapInt() 来进行 CAS 比较，如果该字段内存地址中的值等于 var5，那么就更新内存地址为 var1+var2 的变量为 var4+var5。
+以下代码是 getAndAddInt() 源码，var1 指示对象内存地址，var2 指示该字段相对对象内存地址的偏移，var4 指示操作需要加的数值，这里为 1。通过 getIntVolatile(var1, var2) 得到旧的预期值，通过调用 compareAndSwapInt() 来进行 CAS 比较，如果该字段内存地址中的值等于 var5，那么就更新内存地址为 var1+var2 的变量为 var5+var4。
 
 可以看到 getAndAddInt() 在一个循环中进行，发生冲突的做法是不断的进行重试。
 
@@ -647,24 +644,6 @@ CAS没有加锁，多个线程都可以直接操作共享资源，在实际去�
 线程1从内存位置V取出A，线程2同时也从内存取出A，并且线程2进行一些操作将值改为B，然后线程2又将V位置数据改成A，这时候线程1进行CAS操作发现内存中的值依然时A，然后线程1操作成功。尽管线程1的CAS操作成功，但是不代表这个过程没有问题。
 
 **解决方法**： J.U.C 包提供了一个带有标记的原子引用类 AtomicStampedReference 来解决这个问题，它可以通过控制变量值的版本来保证 CAS 的正确性。在变量前面加上版本号，每次变量更新的时候变量的**版本号都`+1`**，即`A->B->A`就变成了`1A->2B->3A`。
-
-```java
-
-```
-
-
-
-##### 2.循环时间长开销大
-
-**如果`CAS`操作失败，就需要循环进行`CAS`操作(自旋)，**如果长时间都不成功的话，那么会造成CPU极大的开销。
-
-**解决方法**： 限制自旋次数，防止进入死循环。
-
-##### 3.只能保证一个共享变量的原子操作
-
-源代码`public final int getAndAddInt(Object var1, long var2, int var4)`，参数只有一个Object对象。
-
-**解决方法**： 如果需要对多个共享变量进行操作，可以使用加锁方式(悲观锁)保证原子性，因为可以锁一个代码段。
 
 ```java
 public class ABADemo {
@@ -704,7 +683,7 @@ public class ABADemo {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			boolean result = atomicStampedReference.compareAndSet(100, 2019, stamp,
+			boolean result = atomicStampedReference.compareAndSet(100, 200, stamp,
 			stamp + 1);
 			System.out.println(Thread.currentThread().getName() + "\t修改是否成功" +
 			result + "\t当前最新实际版本号：" + atomicStampedReference.getStamp());
@@ -726,6 +705,18 @@ Thread 2 修改是否成功false 当前最新实际版本号：3
 Thread 2 当前最新实际值：100
 ```
 
+##### 2.循环时间长，开销大
+
+**如果`CAS`操作失败，就需要循环进行`CAS`操作(自旋)，**如果长时间都不成功的话，那么会造成CPU极大的开销。
+
+**解决方法**： 限制自旋次数，防止进入死循环。
+
+##### 3.只能保证一个共享变量的原子操作
+
+源代码`public final int getAndAddInt(Object var1, long var2, int var4)`，参数只有一个Object对象。
+
+**解决方法**： 如果需要对多个共享变量进行操作，可以使用加锁方式(悲观锁)保证原子性，因为可以锁一个代码段。
+
 
 
 ### 锁
@@ -741,7 +732,7 @@ Thread 2 当前最新实际值：100
 
 #### 可重入锁（递归锁）
 
-指的时同一线程外层函数获得锁之后，内层递归函数仍然能获取该锁的代码，在同一个线程在外层方法获取锁 的时候，在进入内层方法会自动获取锁，也就是说，线程可以进入任何一个它已经拥有的锁所同步着的代码块。
+同一线程外层函数获得锁之后，内层递归函数仍然能获取该锁，同一个线程，在外层方法获取了锁，在进入内层方法时会自动获取锁。也就是说，线程可以进入任何一个它已经拥有的锁所同步着的代码块。
 
 Synchronized / ReentrantLock 是典型的可重入锁。
 
@@ -786,7 +777,7 @@ class Phone{
 
 #### 自旋锁
 
-互斥同步进入阻塞状态的开销都很大，应该尽量避免。在许多应用中，共享数据的锁定状态只会持续很短的一段时间。**自旋锁的思想是让一个线程在请求一个共享数据的锁时执行忙循环（自旋）一段时间，如果在这段时间内能获得锁，就可以避免进入阻塞状态。自旋锁虽然能避免进入阻塞状态从而减少开销，但是它需要进行忙循环操作占用 CPU 时间，它只适用于共享数据的锁定状态很短的场景。**
+进入阻塞状态的开销很大，应该尽量避免。在许多应用中，共享数据的锁定状态只会持续很短的一段时间。**自旋锁的思想是让一个线程在请求一个共享数据的锁时执行忙循环（自旋）一段时间，如果在这段时间内能获得锁，就可以避免进入阻塞状态。自旋锁虽然能避免进入阻塞状态从而减少开销，但是它需要进行忙循环操作占用 CPU 时间，它只适用于共享数据的锁定状态很短的场景。**
 在 JDK 1.6 中引入了自适应的自旋锁。自适应意味着自旋的次数不再固定了，而是由前一次在同一个锁上的自旋次数及锁的拥有者的状态来决定。
 
 
@@ -807,12 +798,12 @@ ReentrantReadWriteLock的读锁是共享，写锁是独占，写的时候只能�
 
 悲观锁：总是假设最坏的情况，**每次去操作数据时候都认为会被别的线程修改数据，所以在每次操作数据的时候都会给数据加锁，让别的线程无法操作这个数据，别的线程会一直阻塞直到获取到这个数据的锁**。`synchronized`和`ReentrantLock`等独占锁就是悲观锁思想的实现。
 
-#### **乐观锁和悲观锁的使用情景（CAS和synchronized的使用情景）**
+##### 乐观锁和悲观锁的使用情景（CAS和synchronized的使用情景）
 
-1. 对于资源竞争较少（线程冲突较轻）的情况，使用synchronized同步锁进行线程阻塞和唤醒切换以及用户态内核态间的切换操作额外浪费消耗CPU资源；而CAS基于硬件实现，不需要进入内核，不需要切换线程，自旋几率较少，因此可以获得更高的性能。
-2. 对于资源竞争严重（线程冲突严重）的情况，CAS自旋的概率会比较大，从而浪费更多的CPU资源，效率低于synchronized。
+1. 对于资源竞争较少（线程冲突较轻）的情况，使用synchronized同步锁进行线程阻塞和唤醒切换以及用户态内核态间的切换操作浪费CPU资源；而CAS基于硬件实现，不需要切换线程，不需要进入内核，自旋几率较少，因此可以获得更高的性能。
+2. 对于资源竞争严重的情况，CAS自旋的概率会比较大，从而浪费更多的CPU资源，效率低于synchronized。
 
-**简单的来说CAS适用于写少的情况（多读场景，冲突一般较少），synchronized适用于写多的情况下（多写场景，冲突一般较多）**
+**简单来说，CAS适用于读多写少的情况（冲突一般较少），synchronized适用于写多的情况下（冲突一般较多）**
 
 
 
@@ -820,9 +811,9 @@ ReentrantReadWriteLock的读锁是共享，写锁是独占，写的时候只能�
 
 做减法，减到0唤醒主线程。
 
-它允许一个或多个线程一直等待，知道其他线程的操作执行完后再执行。例如，应用程序的主线程希望在负责启动框架服务的线程已经启动所有的框架服务之后再执行。类似于Go语言中的`sync.WaitGroup`。
+它允许一个或多个线程一直等待，直到其他线程的操作执行完后再执行。例如，应用程序的主线程希望在负责启动框架服务的线程已经启动所有的框架服务之后再执行。类似于Go语言中的`sync.WaitGroup`。
 
-CountDownLatch主要有两个方法，当一个或多个线程调用await()方法时，调用线程会被阻塞。其他线程调用 countDown()方法会将计数器减1，当计数器的值变为0时，因调用await()方法被阻塞的线程才会被唤醒，继续执行。
+CountDownLatch主要有两个方法，当一个或多个线程调用await()方法时，调用线程（main）会被阻塞。其他线程调用 countDown()方法会将计数器减1，当计数器的值变为0时，因调用await()方法被阻塞的线程才会被唤醒，继续执行。
 
 ```java
 public class CountDownLatchDemo {
@@ -872,9 +863,7 @@ public static void main(String[] args) {
 				cyclicBarrier.await();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-			} catch (BrokenBarrierException e) {
-				e.printStackTrace();
-			}
+			} 
 		}, "" + i).start();
 	}
 }
@@ -889,7 +878,7 @@ public static void main(String[] args) {
 ```java
 public static void main(String[] args) {
 	Semaphore semaphore = new Semaphore(3);//模拟三个停车位
-		for (int i = 1; i <= 6; i++) {//模拟6部汽车
+		for (int i = 1; i <= 6; i++) {//模拟6辆汽车
 			new Thread(() -> {
 				try {
 					semaphore.acquire();
@@ -1013,91 +1002,6 @@ class ShareData {//资源类
 
 
 
-阻塞队列版
-
-```java
-public class ProdConsumer_BlockQueueDemo {
-    public static void main(String[] args) {
-        MyResource myResource = new MyResource(new ArrayBlockingQueue<>(10));
-        
-        new Thread(() -> {
-            System.out.println(Thread.currentThread().getName() + "生产线程启动");
-            try {
-                myResource.myProd();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }, "Producer").start();
-        
-        new Thread(() -> {
-            System.out.println(Thread.currentThread().getName() + "消费线程启动");
-            try {
-                myResource.myConsumer();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }, "Consumer").start();
-
-        try { TimeUnit.SECONDS.sleep(5); } catch (InterruptedException e) { e.printStackTrace(); }
-        System.out.println("5s后main叫停，线程结束");
-        try {
-            myResource.stop();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-}
-
-class MyResource {
-    private volatile boolean flag = true;//默认开启，进行生产+消费，volatile
-    private AtomicInteger atomicInteger = new AtomicInteger();
-
-    // 不要写死，传接口更通用
-    BlockingQueue<String> blockingQueue = null;
-
-    public MyResource(BlockingQueue<String> blockingQueue) {
-        this.blockingQueue = blockingQueue;
-        // 打印日志，输出实现类
-        System.out.println(blockingQueue.getClass().getName());
-    }
-
-    public void myProd() throws Exception {
-        String data = null;
-        boolean retValue;
-        while (flag) {
-            data = atomicInteger.incrementAndGet() + "";
-            retValue = blockingQueue.offer(data, 2, TimeUnit.SECONDS);
-            if (retValue) {
-                System.out.println(Thread.currentThread().getName() + "插入队列" + data + "成功");
-            } else {
-                System.out.println(Thread.currentThread().getName() + "插入队列" + data + "失败");
-            }
-            TimeUnit.SECONDS.sleep(1);
-        }
-        System.out.println(Thread.currentThread().getName() + "大老板叫停，生产结束");
-    }
-
-    public void myConsumer() throws Exception {
-        String result = null;
-        while (flag) {
-            result = blockingQueue.poll(2, TimeUnit.SECONDS);
-            if (null == result || result.equalsIgnoreCase("")) {
-                flag = false;
-                System.out.println(Thread.currentThread().getName() + "超过2s没有取到资源，消费退出");
-                return;
-            }
-            System.out.println(Thread.currentThread().getName() + "消费队列" + result + "成功");
-        }
-    }
-
-    public void stop() throws Exception {
-        flag = false;
-    }
-}
-```
-
-
-
 Javaguide版阻塞队列：
 
 ```java
@@ -1155,8 +1059,6 @@ produce..produce..consume..consume..produce..consume..produce..consume..produce.
 
 
 
-
-
 ### 线程池
 
 #### **使用线程池的好处**：
@@ -1202,7 +1104,7 @@ produce..produce..consume..consume..produce..consume..produce..consume..produce.
 - **`workQueue`: 工作队列，当新任务来的时候会先判断当前运行的线程数量是否达到核心线程数，如果达到的话，新任务就会被存放在队列中。**
 - **`maximumPoolSize` : 线程池中的当前线程数目不会超过该值。如果工作队列中任务已满，并且当前线程个数小于maximumPoolSize，那么会创建新的线程来执行任务。**
 
-`ThreadPoolExecutor`其他常见参数:
+`ThreadPoolExecutor`其他参数:
 
 1. **`keepAliveTime`**:当线程池中的线程数量大于 `corePoolSize` 的时候，如果这时没有新的任务提交，核心线程外的线程不会立即销毁，而是会等待，直到等待的时间超过了 `keepAliveTime`才会被回收销毁；
 2. **`unit`** : `keepAliveTime` 参数的时间单位。
@@ -1279,8 +1181,8 @@ private volatile int state;//共享变量，使用volatile修饰保证线程可�
 
 #### AQS 对资源的共享方式
 
-- **Exclusive**（独占）：只有一个线程能执行，如 `ReentrantLock`。又可分为公平锁和非公平锁。
-- **Share**（共享）：多个线程可同时执行，如`CountDownLatch`、`Semaphore`、 `CyclicBarrier`、`ReadWriteLock` 。
+- **Exclusive**（独占）：只有一个线程能执行，如 `ReentrantLock`。
+- **Share**（共享）：多个线程可同时执行，如`CountDownLatch`、 `CyclicBarrier`、`Semaphore`、`ReadWriteLock` 。
 
 自定义同步器在实现时只需要实现共享资源 state 的获取与释放方式即可，至于具体线程等待队列的维护（如获取资源失败入队/唤醒出队等），AQS 已经在顶层实现好了。
 
@@ -1328,7 +1230,7 @@ public static String concatString(String s1, String s2, String s3) {
 
 #### 1.不可变
 
-不可变（Immutable）的对象一定是线程安全的，不需要再采取任何的线程安全保障措施。只要一个不可变的对象被正确地构建出来，永远也不会看到它在多个线程之中处于不一致的状态。多线程环境下，应当尽量使对象成为不可变，来满足线程安全。
+不可变（Immutable）的对象一定是线程安全的，不需要再采取任何的线程安全保障措施。只要一个不可变的对象被正确地构建出来，就永远也不会看到它在多个线程之中处于不一致的状态。
 
 不可变的类型：
 
@@ -1337,17 +1239,9 @@ public static String concatString(String s1, String s2, String s3) {
 - 枚举类型
 - Number 部分子类，如 Long 和 Double 等数值包装类型，BigInteger 和 BigDecimal 等大数据类型。但同为 Number 的原子类 AtomicInteger 和 AtomicLong 则是可变的。
 
-#### 2.互斥同步
+#### 2.互斥同步：synchronized 和 ReentrantLock。
 
-synchronized 和 ReentrantLock。
-
-#### 3.非阻塞同步
-
-互斥同步最主要的问题就是线程阻塞和唤醒所带来的性能问题，因此这种同步也称为阻塞同步。
-
-互斥同步属于一种悲观的并发策略，总是认为只要不去做正确的同步措施，那就肯定会出现问题。无论共享数据是否真的会出现竞争，它都要进行加锁（这里讨论的是概念模型，实际上虚拟机会优化掉很大一部分不必要的加锁）、用户态核心态转换、维护锁计数器和检查是否有被阻塞的线程需要唤醒等操作。
-
-随着硬件指令集的发展，我们可以使用基于冲突检测的乐观并发策略：先进行操作，如果没有其它线程争用共享数据，那操作就成功了，否则采取补偿措施（不断地重试，直到成功为止）。这种乐观的并发策略的许多实现都不需要将线程阻塞，因此这种同步操作称为非阻塞同步。CAS
+#### 3.非阻塞同步：CAS
 
 #### 4.无同步方案
 

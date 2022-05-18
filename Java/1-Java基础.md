@@ -1,9 +1,10 @@
-### 缓存池
+### 池化思想
 
-new Integer(123) 与 Integer.valueOf(123) 的区别在于：
+#### 缓存池
 
-- new Integer(123) 每次都会新建一个对象；
-- Integer.valueOf(123) 会使用缓存池中的对象，多次调用会取得同一个对象的引用。
+new Integer() 每次都会新建一个对象；
+
+**Integer.valueOf() 先判断值是否在缓存池中，如果在的话就直接返回缓存池的内容。Integer 缓存池的大小默认为 -128\~127。**( Java 8 )
 
 ```java
 Integer x = new Integer(123);
@@ -14,11 +15,7 @@ Integer k = Integer.valueOf(123);
 System.out.println(z == k);   // true
 ```
 
-valueOf() 方法的实现比较简单，就是先判断值是否在缓存池中，如果在的话就直接返回缓存池的内容。
-
-在 Java 8 中，Integer 缓存池的大小默认为 -128\~127。
-
-编译器会在自动装箱过程调用 valueOf() 方法，因此多个值相同且值在缓存池范围内的 Integer 实例使用自动装箱来创建，那么就会引用相同的对象。
+**编译器会在自动装箱过程调用 valueOf() 方法，因此多个值相同且值在缓存池范围内的 Integer 实例使用自动装箱来创建，那么就会引用相同的对象。**
 
 ```java
 Integer m = 123;
@@ -28,84 +25,42 @@ System.out.println(m == n); // true
 
 
 
-### String Pool
+#### String Pool
 
-字符串常量池（String Pool）保存着所有字符串字面量（literal strings），这些字面量在编译时期就确定。不仅如此，还可以使用 String 的 intern() 方法在运行过程将字符串添加到 String Pool 中。
+字符串常量池（String Pool）保存着所有字符串字面量，这些字面量在编译时期就确定。
 
-当一个字符串调用 intern() 方法时，如果 String Pool 中已经存在一个字符串和该字符串值相等（使用 equals() 方法进行确定），那么就会返回 String Pool 中字符串的引用；否则，就会在 String Pool 中添加一个新的字符串，并返回这个新字符串的引用。
+**当一个字符串调用 intern() 方法时，如果 String Pool 中已经存在一个字符串和该字符串值相等**（使用 equals() 方法进行确定）**，那么就会返回 String Pool 中字符串的引用；否则，就会在 String Pool 中添加一个新的字符串，并返回这个新字符串的引用。**
 
 ```java
-String s1 = new String("aaa");
-String s2 = new String("aaa");
+String s1 = new String("a");
+String s2 = new String("a");
 System.out.println(s1 == s2);           // false
 String s3 = s1.intern();
 String s4 = s2.intern();
 System.out.println(s3 == s4);           // true
 ```
 
-如果是采用 "bbb" 这种字面量的形式创建字符串，会自动地将字符串放入 String Pool 中。
+**如果是采用 String s = "b" 这种字面量的形式创建字符串，会自动地将字符串放入 String Pool 中。**
 
 ```java
-String s5 = "bbb";
-String s6 = "bbb";
+String s5 = "b";
+String s6 = "b";
 System.out.println(s5 == s6);  // true
 ```
 
 
 
-### new String("abc")
+#### String s = new String("abc")
 
-使用这种方式一共会创建两个字符串对象（前提是 String Pool 中还没有 "abc" 字符串对象）。
+**"abc"本身就是String Pool中的一个对象，在运行 new String()时，把String Pool中的字符串"abc"复制到堆中，并把这个对象的引用交给s，所以创建了两个String对象，一个在String Pool中，一个在堆中。**
 
-- "abc" 属于字符串字面量，因此编译时期会在 String Pool 中创建一个字符串对象，指向这个 "abc" 字符串字面量；
-- 而使用 new 的方式会在堆中创建一个字符串对象。
 
-创建一个测试类，其 main 方法中使用这种方式来创建字符串对象。
 
-```java
-public class NewStringTest {
-    public static void main(String[] args) {
-        String s = new String("abc");
-    }
-}
-```
+#### 总结
 
-使用 javap -verbose 进行反编译，得到以下内容：
+new：每次都会新建一个对象。
 
-```java
-// ...
-Constant pool:
-// ...
-   #2 = Class              #18            // java/lang/String
-   #3 = String             #19            // abc
-// ...
-  #18 = Utf8               java/lang/String
-  #19 = Utf8               abc
-// ...
-
-  public static void main(java.lang.String[]);
-    descriptor: ([Ljava/lang/String;)V
-    flags: ACC_PUBLIC, ACC_STATIC
-    Code:
-      stack=3, locals=2, args_size=1
-         0: new           #2                  // class java/lang/String
-         3: dup
-         4: ldc           #3                  // String abc
-         6: invokespecial #4                  // Method java/lang/String."<init>":(Ljava/lang/String;)V
-         9: astore_1
-// ...
-```
-
-在 Constant Pool 中，#19 存储这字符串字面量 "abc"，#3 是 String Pool 的字符串对象，它指向 #19 这个字符串字面量。在 main 方法中，0: 行使用 new #2 在堆中创建一个字符串对象，并且使用 ldc #3 将 String Pool 中的字符串对象作为 String 构造函数的参数。
-
-以下是 String 构造函数的源码，可以看到，在将一个字符串对象作为另一个字符串对象的构造函数参数时，并不会完全复制 value 数组内容，而是都会指向同一个 value 数组。
-
-```java
-public String(String original) {
-    this.value = original.value;
-    this.hash = original.hash;
-}
-```
+Integer.valueOf()、Integer m = 123、String.intern()、String s = "a" ：缓存池、String Pool。
 
 
 
@@ -125,7 +80,7 @@ public String(String original) {
 
 **1. 变量**  
 
-声明变量为常量，可以是编译时常量，也可以是在运行时被初始化后不能被改变的常量。
+声明变量为常量。
 
 - 对于基本类型，final 使数值不变；
 - 对于引用类型，final 使其**不能引用其它对象，但是被引用的对象本身的值是可以修改的。**
@@ -150,7 +105,7 @@ public String(String original) {
 
 **String str = str + “world!” 改变了String的值，为什么还说String是不可变的呢？**
 
-**String类对象内容不能修改，但并不代表其引用不能改变**，下面通过内存的分配图说明字符串不可改变的真正含义：
+**String对象内容不能修改，但并不代表其引用不能改变**，下面通过内存的分配图说明字符串不可改变的真正含义：
 
 <img src="C:\Users\黄睿楠\AppData\Roaming\Typora\typora-user-images\image-20220207180428400.png" alt="image-20220207180428400" style="zoom:50%;" />
 
@@ -165,7 +120,7 @@ public String(String original) {
 
 **不可变性使得 hash 值也不可变，所以在String创建的时候hashcode就被缓存了，使用时不需要重新计算。**
 
-**2. String Pool 的需要**  
+**2. String Pool **
 
 **当有多个String引用指向同样的String字符串时，实际上是指向的是同一个Sting pool中的对象，而不需要额外的创建对象。只有 String 是不可变的，才可能使用 String Pool。**
 
@@ -208,10 +163,7 @@ public class test1 {
     public static void main(String[] args) {
         String a = new String("ab"); // a 为一个引用
         String b = new String("ab"); // b为另一个引用,对象的内容一样
-        String c = "ab"; // 放在常量池中
-        String d = "ab"; // 从常量池中查找
         if (a == b) // false，不同对象
-        if (c == d) // true
         if (a.equals(b)) // true
         if (42 == 42.0)  // 基本数据类型比较的是值，true
     }
@@ -222,21 +174,24 @@ public class test1 {
 
 ### 为什么重写equals方法，还必须要重写hashcode方法？
 
-因为Hash比equals方法的开销要小，速度更快，所以在涉及到hashcode的容器中（比如HashSet），判断是否持有该对象时，会先检查hashCode是否相等，**如果hashCode不相等，就会直接认为不相等，并存入容器中，**不会再调用equals进行比较。**如果只重写equals而不重写hashcode，就会导致，即使该对象已经存在HashSet中，但是因为hashCode不同，还会再次被存入。**因此要重写hashCode保证：如果equals判断是相等的，那hashCode值也要相等。
+因为Hash比equals方法的开销更小，速度更快。在涉及到hashcode的容器（比如HashSet）中，判断是否包含该对象时，会先检查hashcode是否相等，**如果hashcode不相等，就会直接认为不相等，并存入容器中，**不会再调用equals进行比较。**如果只重写equals而不重写hashcode，就会导致，即使该对象已经存在HashSet中，但是因为hashcode不同，还会再次被存入。因此要重写hashcode，保证：如果equals判断是相等的，那hashcode值也要相等。**
 
-总结：
-1.使用hashcode方法提前校验，可以避免每一次比对都调用equals方法，提高效率。
-2.保证是同一个对象，如果重写了equals方法，而没有重写hashcode方法，会出现equals相等的对象，hashcode不相等的情况。
+**总结：**
+**1.使用hashcode方法提前校验，可以避免每一次比对都调用equals方法，提高效率。**
+**2.保证是同一个对象，如果重写了equals方法，而没有重写hashcode方法，会出现equals相等的对象，hashcode不相等的情况。**
 
 
 
 ### 抽象类与接口
 
-<img src="C:\Users\黄睿楠\AppData\Roaming\Typora\typora-user-images\image-20220321114150336.png" alt="image-20220321114150336" style="zoom: 67%;" />
-
-
-
-[抽象类和接口的区别与使用]: https://www.cnblogs.com/east7/p/10739789.html
+1. 定义抽象类的关键字是abstract class，而定义接口的关键字是interface。
+2. 继承抽象类的关键字是extends，而实现接口的关键字是implements。
+3. 抽象类只能单继承，而接口可以多实现。
+4. 抽象类中可以有构造方法，而接口中不可以有。
+5. 抽象类中可以有成员方法（方法的默认实现），而接口中只可以有抽象方法。
+6. 抽象类中增加方法可以不影响子类，而接口中增加方法通常都影响子类。
+7. 从jdk 1.8开始，允许接口中出现非抽象方法，但需要使用default修饰。
+8. 抽象类的访问修饰符可以是public、protected、default，而接口只有public。
 
 
 
@@ -355,7 +310,14 @@ public final native Class<?> getClass()
 
 **泛型擦除：泛型信息只存在于代码编译阶段，在进入 JVM 之前，与泛型相关的信息会被擦除掉。**
 
-[泛型和泛型擦除]: https://blog.csdn.net/briblue/article/details/76736356
+```java
+List<String> l1 = new ArrayList<String>();
+List<Integer> l2 = new ArrayList<Integer>();
+		
+System.out.println(l1.getClass() == l2.getClass());
+```
+
+打印的结果为 true，因为 `List<String>`和 `List<Integer>`在 JVM 中的 Class 都是 List.class。
 
 
 
