@@ -282,12 +282,6 @@ public class MyException extends RuntimeException{
 
 
 
-#### String s = new String("abc");方式创建对象，在内存中创建了几个对象？
-
-两个:一个是堆空间中new结构，另一个是char[]对应的常量池中的数据："abc"
-
-
-
 String实现了Serializable接口，表示字符串是支持序列化的
 
 序列化，就是将Java对象转化成字节流的形式传出去。反序列化，就是从字节流中恢复Java对象。
