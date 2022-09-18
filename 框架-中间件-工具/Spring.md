@@ -6,7 +6,7 @@
 
 ### IoC（控制反转）
 
-将原本在程序中手动创建对象的控制权，交由Spring的IoC容器来管理。**通俗理解：对象由Spring 来创建 , 管理 , 装配。 IoC 容器就像是一个工厂，当我们需要创建一个对象的时候，只需要配置好配置文件或注解即可，不用考虑对象是如何被创建出来的。** 
+**将原本在程序中手动创建对象的控制权，交由Spring的IoC容器来管理。通俗理解：对象由Spring来创建 , 管理 , 装配。 IoC 容器就像是一个工厂，当我们需要创建一个对象的时候，只需要配置好配置文件或注解即可，不用考虑对象是如何被创建出来的。** 
 
 
 
@@ -28,7 +28,7 @@ XML，注解，Config配置类。
 1.常量注入
 
 ```xml
-使用Spring来创建对象，在Spring中，这些对象称为Bean
+// 使用Spring来创建对象，在Spring中，这些对象称为Bean
 
 类型 对象名 = new 类型()
 User user = new User()
@@ -104,7 +104,7 @@ public class MyConfig {
 }
 ```
 
- 上面的代码相当于下面的 xml 配置
+ 上面的代码相当于下面的 xml 配置：
 
 ```xml
 <beans>
@@ -145,20 +145,20 @@ private UserService userService2;
 
 bean就是由IoC容器初始化、装配及管理的对象。
 
-| 类别      | 说明                                                         |
-| --------- | ------------------------------------------------------------ |
+|   类别    |                             说明                             |
+| :-------: | :----------------------------------------------------------: |
 | singleton | 在Spring IoC容器中仅存在一个Bean实例，Bean以单例方式存在，默认值 |
 | prototype | **每次从容器中调用Bean时，都返回一个新的实例，即每次调用getBean()时，相当于执行new XxxBean()** |
 
 #### Singleton
 
-当一个bean的作用域为Singleton，那么Spring IoC容器中只会存在一个共享的bean实例，并且所有对bean的请求，只要id与该bean定义相匹配，则只会返回同一个bean实例。**Singleton是单例类型，就是在创建起容器时就同时自动创建了一个bean的对象，不管你是否使用，他都存在，每次获取到的对象都是同一个对象。**Singleton作用域是Spring中的缺省作用域。
+当一个bean的作用域为Singleton，那么Spring IoC容器中只会存在一个共享的bean实例，并且所有对bean的请求，只要id与该bean定义相匹配，则只会返回同一个bean实例。**Singleton是单例类型，就是在创建起容器时就同时自动创建了一个bean的对象，不管你是否使用，他都存在，每次获取到的对象都是同一个对象。**
 
 测试：
 
 ```java
  @Test
- public void test03(){
+ public void test(){
      ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
      User user = (User) context.getBean("user");
      User user2 = (User) context.getBean("user");
@@ -168,7 +168,7 @@ bean就是由IoC容器初始化、装配及管理的对象。
 
 #### Prototype
 
-当一个bean的作用域为Prototype，表示一个bean定义对应多个对象实例。Prototype作用域的bean会导致在每次对该bean请求时都会创建一个新的bean实例。Prototype是原型类型，它在我们创建容器的时候并没有实例化，而是当我们获取bean的时候才会去创建一个对象，而且我们每次获取到的对象都不是同一个对象。根据经验，**对有状态的bean应该使用prototype作用域，而对无状态的bean则应该使用singleton作用域。**在XML中将bean定义成prototype，可以这样配置：
+当一个bean的作用域为Prototype，表示一个bean定义对应多个对象实例。Prototype作用域的bean会在每次对该bean请求时都会创建一个新的bean实例。Prototype是原型类型，它在我们创建容器的时候并没有实例化，而是当我们获取bean的时候才会去创建一个对象，而且我们每次获取到的对象都不是同一个对象。根据经验，**对有状态的bean应该使用prototype作用域，而对无状态的bean则应该使用singleton作用域。**在XML中将bean定义成prototype，可以这样配置：
 
 ```xml
  <bean id="account" class="com.foo.DefaultAccount" scope="prototype"/>  
@@ -232,21 +232,15 @@ Spring启动，查找并加载需要被Spring管理的bean，（通过反射）�
 
 ### Spring 事务中哪几种事务传播行为?
 
-**支持当前事务的情况：**
+七种：
 
-- **TransactionDefinition.PROPAGATION_REQUIRED：** 如果当前存在事务，则加入该事务；如果当前没有事务，则创建一个新的事务。
-- **TransactionDefinition.PROPAGATION_SUPPORTS：** 如果当前存在事务，则加入该事务；如果当前没有事务，则以非事务的方式继续运行。
-- **TransactionDefinition.PROPAGATION_MANDATORY：** 如果当前存在事务，则加入该事务；如果当前没有事务，则抛出异常。（mandatory：强制性）
-
-**不支持当前事务的情况：**
-
-- **TransactionDefinition.PROPAGATION_REQUIRES_NEW：** 创建一个新的事务，如果当前存在事务，则把当前事务挂起。
-- **TransactionDefinition.PROPAGATION_NOT_SUPPORTED：** 以非事务方式运行，如果当前存在事务，则把当前事务挂起。
-- **TransactionDefinition.PROPAGATION_NEVER：** 以非事务方式运行，如果当前存在事务，则抛出异常。
-
-**其他情况：**
-
-- **TransactionDefinition.PROPAGATION_NESTED：** 如果当前存在事务，则创建一个事务作为当前事务的嵌套事务来运行；如果当前没有事务，则该取值等价于TransactionDefinition.PROPAGATION_REQUIRED。
+- **PROPAGATION_REQUIRED** —— 支持当前事务，如果当前没有事务，则**新建一个事务，这是最常见的选择，也是 Spring 默认的一个事务传播属性。**
+- **PROPAGATION_SUPPORTS** —— 支持当前事务，如果当前没有事务，则**以非事务方式执行。**
+- **PROPAGATION_MANDATORY** —— 支持当前事务，如果当前没有事务，则**抛出异常。**
+- **PROPAGATION_REQUIRES_NEW** —— 新建事务，如果当前存在事务，把当前事务挂起。
+- **PROPAGATION_NOT_SUPPORTED** —— 以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。
+- **PROPAGATION_NEVER** —— 以非事务方式执行，如果当前存在事务，则抛出异常。
+- **PROPAGATION_NESTED**--如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作，新建。
 
 [声明式事务](https://mp.weixin.qq.com/s?__biz=Mzg2NTAzMTExNg==&mid=2247484148&idx=1&sn=9d3edabf2443cd3a552e62e51b1f4097&scene=19#wechat_redirect)
 
@@ -268,7 +262,7 @@ Spring启动，查找并加载需要被Spring管理的bean，（通过反射）�
 
 **视频重点：**
 
-3，4，5，19（动态代理）
+3，4，5，17，19（动态代理），27
 
 
 
@@ -278,7 +272,7 @@ Spring启动，查找并加载需要被Spring管理的bean，（通过反射）�
 
 ### 什么是Spring MVC
 
-MVC 是一种设计模式，Spring MVC 是一种 MVC 框架。它可以简化Web层的开发。在Spring MVC 下我们一般把后端项目分为 Service层（处理业务）、Dao层（数据库操作）、Entity层（实体类）、Controller层(控制层，返回数据给前台页面)。
+**MVC 是一种架构模式，Spring MVC 是一种 MVC 框架。**它可以简化Web层的开发。在Spring MVC 下我们一般把后端项目分为 Service层（处理业务）、Dao层（数据库操作）、Entity层（实体类）、Controller层(控制层，返回数据给前端页面)。
 
 **简单原理图：**
 
@@ -290,16 +284,33 @@ MVC 是一种设计模式，Spring MVC 是一种 MVC 框架。它可以简化Web
 
 <a href="https://sm.ms/image/chKOue2fqmnBR91" target="_blank"><img src="https://s2.loli.net/2022/04/25/chKOue2fqmnBR91.png" ></a>
 
-**流程说明（重要）：**
+**流程说明：**
 
-1. 客户端（浏览器）发送请求到 `DispatcherServlet`。
-2. `DispatcherServlet` 根据请求信息调用 `HandlerMapping`，解析请求对应的 `Handler`。
-3. 解析到对应的 `Handler`（也就是 `Controller` 控制器）后，开始由 `HandlerAdapter` 适配器处理。
-4. `HandlerAdapter` 会根据 `Handler `来调用真正的处理器来处理请求和相应的业务逻辑。
-5. 处理器处理完业务后，会返回一个 `ModelAndView` 对象，`Model` 是返回的数据对象，`View` 是一个逻辑上的 `View`。
-6. `ViewResolver` 会根据逻辑 `View` 查找实际的 `View`。
-7. `DispaterServlet` 把返回的 `Model` 传给 `View`（视图渲染）。
-8. 把 `View` 返回给请求者（浏览器）
+三个部分：
+
+客户端（浏览器）发送请求到 `DispatcherServlet`。
+
+`DispatcherServlet` 根据请求信息调用 `HandlerMapping`，解析请求对应的 `Handler`。
+
+
+
+解析到对应的 `Handler`（也就是 `Controller` 控制器）后，开始由 `HandlerAdapter` 适配器处理。
+
+`HandlerAdapter` 会根据 `Handler `来调用真正的处理器来处理请求和相应的业务逻辑。
+
+处理器处理完业务后，会返回一个 `ModelAndView` 对象，`Model` 是返回的数据对象，`View` 是一个逻辑上的 `View`。
+
+
+
+`ViewResolver` 会根据逻辑 `View` 查找实际的 `View`。
+
+`DispaterServlet` 把返回的 `Model` 传给 `View`（视图渲染）。
+
+把 `View` 返回给请求者（浏览器）
+
+
+
+[2.3、SpringMVC执行原理](https://mp.weixin.qq.com/s?__biz=Mzg2NTAzMTExNg==&mid=2247483970&idx=1&sn=352e571ee88957ce391e972344e2a3d7&scene=19#wechat_redirect)
 
 
 
@@ -311,21 +322,27 @@ MVC 是一种设计模式，Spring MVC 是一种 MVC 框架。它可以简化Web
 
 
 
+**视频重点：**
+
+5（SpringMVC执行原理）
+
+
+
 
 
 ## SpringBoot
 
 ### 自动装配
 
-springboot所有自动配置都是在启动时扫描并加载：所有的自动类都在`spring.factories`里面，但不一定生效，需要判断条件是否成立，只要导入了对应的starter，就有对应的启动器了，自动装配就会生效。
+**springboot所有自动配置都在启动时扫描并加载：所有的自动类都在`spring.factories`里面，但不一定生效，需要判断条件是否成立，只要导入了对应的starter，就有了对应的启动器，自动装配就会生效。**
 
 **结论：**
 
 1. SpringBoot在启动的时候从类路径下的META-INF/spring.factories中获取EnableAutoConfiguration指定的值
 2. 将这些值作为自动配置类导入容器 ， 自动配置类就生效 ， 帮我们进行自动配置工作；
 3. 整个J2EE的整体解决方案和自动配置都在springboot-autoconfigure的jar包中；
-4. 它会给容器中导入非常多的自动配置类 （xxxAutoConfiguration）, 就是给容器中导入这个场景需要的所有组件 ， 并配置好这些组件 ；
-5. 有了自动配置类 ， 免去了我们手动编写配置注入功能组件等的工作。
+4. 它会给容器中导入非常多的自动配置类 （xxxAutoConfiguration）, 就是给容器中导入这个场景需要的所有组件，并配置好这些组件 ；
+5. 有了自动配置类，免去了我们手动编写配置注入功能组件等的工作。
 
 
 
