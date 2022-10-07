@@ -219,6 +219,10 @@ new capacity : 00100000
 
 
 
+[LinkedHashMap底层](https://www.imooc.com/article/22931)
+
+
+
 ### ConcurrentHashMap
 
 #### 1. 存储结构

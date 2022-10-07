@@ -152,7 +152,7 @@ bean就是由IoC容器初始化、装配及管理的对象。
 
 #### Singleton
 
-当一个bean的作用域为Singleton，那么Spring IoC容器中只会存在一个共享的bean实例，并且所有对bean的请求，只要id与该bean定义相匹配，则只会返回同一个bean实例。**Singleton是单例类型，就是在创建起容器时就同时自动创建了一个bean的对象，不管你是否使用，他都存在，每次获取到的对象都是同一个对象。**
+当一个bean的作用域为Singleton，那么Spring IoC容器中只会存在一个共享的bean实例，并且所有对bean的请求，只要id与该bean定义相匹配，则只会返回同一个bean实例。**Singleton是单例类型，就是在创建容器时同时自动创建了一个bean的对象，不管你是否使用，他都存在，每次获取到的对象都是同一个对象。**
 
 测试：
 
@@ -243,20 +243,6 @@ Spring启动，查找并加载需要被Spring管理的bean，（通过反射）�
 - **PROPAGATION_NESTED**--如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作，新建。
 
 [声明式事务](https://mp.weixin.qq.com/s?__biz=Mzg2NTAzMTExNg==&mid=2247484148&idx=1&sn=9d3edabf2443cd3a552e62e51b1f4097&scene=19#wechat_redirect)
-
-
-
-### 补充：import标签
-
-可以将多个配置文件导入合并为一个，使用时用总的配置。
-
-```xml
-<-- applicationContext.xml -->
-
-<import resource="bean1.xml"/>
-<import resource="bean2.xml"/>
-<import resource="bean2.xml"/>
-```
 
 
 

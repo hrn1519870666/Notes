@@ -2,20 +2,19 @@
 
 #### 缓存池
 
-new Integer() 每次都会新建一个对象；
-
-**Integer.valueOf() 先判断值是否在缓存池中，如果在的话就直接返回缓存池的内容。Integer 缓存池的大小默认为 -128\~127。**( Java 8 )
+**Integer.valueOf() 先判断值是否在缓存池中，如果在就直接返回缓存池的内容。Integer 缓存池的大小默认为 -128\~127。**( Java 8 )
 
 ```java
 Integer x = new Integer(123);
 Integer y = new Integer(123);
 System.out.println(x == y);    // false
+
 Integer z = Integer.valueOf(123);
 Integer k = Integer.valueOf(123);
 System.out.println(z == k);   // true
 ```
 
-**编译器会在自动装箱过程调用 valueOf() 方法，因此多个值相同且值在缓存池范围内的 Integer 实例使用自动装箱来创建，那么就会引用相同的对象。**
+**编译器会在自动装箱过程调用 valueOf() 方法，**因此多个值相同且值在缓存池范围内的 Integer 实例使用自动装箱来创建，那么就会引用相同的对象。
 
 ```java
 Integer m = 123;
@@ -27,20 +26,19 @@ System.out.println(m == n); // true
 
 #### String Pool
 
-字符串常量池（String Pool）保存着所有字符串字面量，这些字面量在编译时期就确定。
-
 **当一个字符串调用 intern() 方法时，如果 String Pool 中已经存在一个字符串和该字符串值相等**（使用 equals() 方法进行确定）**，那么就会返回 String Pool 中字符串的引用；否则，就会在 String Pool 中添加一个新的字符串，并返回这个新字符串的引用。**
 
 ```java
 String s1 = new String("a");
 String s2 = new String("a");
 System.out.println(s1 == s2);           // false
+
 String s3 = s1.intern();
 String s4 = s2.intern();
 System.out.println(s3 == s4);           // true
 ```
 
-**如果是采用 String s = "b" 这种字面量的形式创建字符串，会自动地将字符串放入 String Pool 中。**
+**采用 String s = "b" 这种字面量的形式创建字符串，会自动地将字符串放入 String Pool 中。**
 
 ```java
 String s5 = "b";
@@ -87,11 +85,11 @@ Integer.valueOf()、Integer m = 123、String.intern()、String s = "a" ：缓存
 
 **2. 方法**  
 
-**声明方法不能被子类重写。private 方法隐式地被指定为 final。**
+**final方法不能被子类重写。**
 
 **3. 类**  
 
-**声明类不允许被继承。**
+**final类不允许被继承。**
 
 
 
@@ -99,7 +97,7 @@ Integer.valueOf()、Integer m = 123、String.intern()、String s = "a" ：缓存
 
 #### String 为什么是不可变的?
 
-**`String` 类中使用 `final` 关键字修饰字符数组来保存字符串，`private final char value[]`，**所以 String 对象是不可变的。
+`String` 类中使用 **`final` 关键字修饰字符数组**来保存字符串，**`private final char value[]`，**所以 String 对象是不可变的。
 
 
 
@@ -150,6 +148,8 @@ Integer.valueOf()、Integer m = 123、String.intern()、String s = "a" ：缓存
 
 **==：基本数据类型比较的是值，引用数据类型比较的是内存地址。**
 
+if (42 == 42.0)   // 基本数据类型比较的是值，true
+
 **equals()** :
 
 - **情况 1：类没有覆盖 equals() 方法。等价于“==”。**
@@ -165,7 +165,6 @@ public class test1 {
         String b = new String("ab"); // b为另一个引用,对象的内容一样
         if (a == b) // false，不同对象
         if (a.equals(b)) // true
-        if (42 == 42.0)  // 基本数据类型比较的是值，true
     }
 }
 ```
@@ -174,11 +173,7 @@ public class test1 {
 
 ### 为什么重写equals方法，还必须要重写hashcode方法？
 
-因为Hash比equals方法的开销更小，速度更快。在涉及到hashcode的容器（比如HashSet）中，判断是否包含该对象时，会先检查hashcode是否相等，**如果hashcode不相等，就会直接认为不相等，并存入容器中，**不会再调用equals进行比较。**如果只重写equals而不重写hashcode，就会导致，即使该对象已经存在HashSet中，但是因为hashcode不同，还会再次被存入。因此要重写hashcode，保证：如果equals判断是相等的，那hashcode值也要相等。**
-
-**总结：**
-**1.使用hashcode方法提前校验，可以避免每一次比对都调用equals方法，提高效率。**
-**2.保证是同一个对象，如果重写了equals方法，而没有重写hashcode方法，会出现equals相等的对象，hashcode不相等的情况。**
+因为**Hashcode比equals方法的开销更小，速度更快。**在涉及到hashcode的容器（比如HashSet）中，判断容器是否包含该对象时，会先检查hashcode是否相等，**如果hashcode不相等，就会直接认为不相等，并存入容器中，**不会再调用equals进行比较。**如果只重写equals而不重写hashcode，就会导致，即使该对象已经存在HashSet中，但是因为hashcode不同，还会再次被存入。因此要重写hashcode，保证：如果equals判断是相等的，那hashcode值也要相等。**
 
 
 
@@ -186,12 +181,13 @@ public class test1 {
 
 1. 定义抽象类的关键字是abstract class，而定义接口的关键字是interface。
 2. 继承抽象类的关键字是extends，而实现接口的关键字是implements。
-3. 抽象类只能单继承，而接口可以多实现。
+3. **抽象类只能单继承，而接口可以多实现。**
 4. 抽象类中可以有构造方法，而接口中不可以有。
 5. 抽象类中可以有成员方法（方法的默认实现），而接口中只可以有抽象方法。
-6. 抽象类中增加方法可以不影响子类，而接口中增加方法通常都影响子类。
-7. 从jdk 1.8开始，允许接口中出现非抽象方法，但需要使用default修饰。
-8. 抽象类的访问修饰符可以是public、protected、default，而接口只有public。
+6. 从jdk 1.8开始，允许接口中出现非抽象方法，但需要使用default修饰。
+7. **抽象类中增加方法可以不影响子类，而接口中增加方法通常都影响子类。**
+8. **抽象类的访问修饰符可以是public、protected、default，而接口只有public。**
+9. **描述特征（会飞的）用接口，描述概念（鸟）用抽象类。**
 
 
 
@@ -219,18 +215,22 @@ public class test1 {
 
 继承实现了   **IS-A**   关系，例如 Cat 和 Animal 就是一种 IS-A 关系，因此 Cat 可以继承自 Animal，从而获得 Animal 非 private 的属性和方法。
 
-1. 子类拥有父类对象所有的属性和方法（包括私有属性和私有方法），但是父类中的私有属性和方法，子类是无法访问，**只是拥有**。
+1. 子类拥有父类对象所有的属性和方法（包括私有属性和私有方法），但是父类中的私有属性和方法，子类是**无法访问，只是拥有。**
 2. 子类可以重写父类方法。
 3. 子类可以拥有自己属性和方法，即子类可以对父类进行扩展。
+
+**封装和继承都提升了代码的复用性。**
 
 ####  多态
 
 **多态分为编译时多态和运行时多态：**
 
-- **编译时多态主要指方法的重载**
-- **运行时多态指对象引用所指向的具体类型在运行期间才确定**
+- 编译时多态主要指方法的重载
+- 运行时多态指对象引用所指向的具体类型在运行期间才确定
 
 **运行时多态有三个条件：继承，重写，向上转型。**
+
+**Animal a = new Dog();**
 
 下面的代码中，乐器类（Instrument）有两个子类：Wind 和 Percussion，它们都重写了父类的 play() 方法，并且在 main() 方法中使用父类 Instrument 来存 Wind 和 Percussion 对象。**在 Instrument 引用调用 play() 方法时，会执行实际引用对象所在类的 play() 方法，**而不是 Instrument 类的方法。
 
@@ -282,7 +282,7 @@ Percussion is playing...
 
 
 
-### Object的方法？
+### Object类有哪些方法？
 
 ```java
 public boolean equals(Object obj)
@@ -300,9 +300,7 @@ public final native Class<?> getClass()
 
 ### 浅拷贝和深拷贝？
 
-浅拷贝：拷贝对象和原始对象的引用类型引用同一个对象。
-
-深拷贝 ：拷贝对象和原始对象的引用类型引用不同对象。
+如果在拷贝这个对象的时候，只对基本数据类型进行了拷贝，而对引用数据类型只是进行了引用的传递，而没有真实的创建一个新的对象，则认为是浅拷贝。反之，在对引用数据类型进行拷贝的时候，创建了一个新的对象，并且复制其内的成员变量，则认为是深拷贝。
 
 
 
@@ -351,7 +349,7 @@ class.forName('com.mysql.jdbc.Driver.class');   //加载MySQL的驱动类
 
 （1）**性能较低，**需要解析字节码，将内存中的对象进行解析。
 
-（2）**不安全，破坏了封装性**（因为通过反射可以获得私有方法和属性）。
+（2）**不安全，破坏了封装性**（因为通过反射可以获得私有属性和方法）。
 
 
 
@@ -359,7 +357,7 @@ class.forName('com.mysql.jdbc.Driver.class');   //加载MySQL的驱动类
 
 #### 阻塞与非阻塞
 
-阻塞与非阻塞指的是单个线程内遇到同步等待时，是否在原地不做任何操作。
+阻塞与非阻塞指的是**单个线程内遇到同步等待时，是否在原地不做任何操作。**
 
 阻塞指的是遇到同步等待后，一直在原地等待同步方法处理完成。
 
@@ -371,7 +369,7 @@ class.forName('com.mysql.jdbc.Driver.class');   //加载MySQL的驱动类
 
 #### 同步与异步
 
-同步和异步指的是一个执行流程中每个方法是否必须依赖前一个方法完成后才可以继续执行。假设我们的执行流程中，依次是方法一和方法二。
+同步和异步指的是**一个执行流程中每个方法是否必须依赖前一个方法完成后才可以继续执行。假设我们的执行流程中，依次是方法一和方法二。**
 
 同步指的是调用一旦开始，调用者必须等到方法调用返回后，才能继续后续的行为。即方法二一定要等到方法一执行完成后才可以执行。
 
