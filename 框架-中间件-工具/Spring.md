@@ -223,6 +223,9 @@ Spring启动，查找并加载需要被Spring管理的bean，（通过反射）�
 - **单例模式** : Spring 中的 Bean 默认都是单例的。
 - **工厂模式** : Spring通过 `BeanFactory`、`ApplicationContext` 创建 bean 对象。
 - **代理模式** : Spring AOP 功能的实现。
+
+
+
 - **装饰器模式** : 我们的项目需要连接多个数据库，而且不同的客户在每次访问中根据需要会去访问不同的数据库。这种模式让我们可以根据客户的需求能够动态切换不同的数据源。
 - **观察者模式:** Spring 事件驱动模型就是观察者模式很经典的一个应用。
 - **适配器模式** :Spring AOP 的增强或通知(Advice)使用到了适配器模式、spring MVC 中也是用到了适配器模式适配`Controller`。
@@ -268,31 +271,17 @@ Spring启动，查找并加载需要被Spring管理的bean，（通过反射）�
 
 ### SpringMVC 工作原理
 
-<a href="https://sm.ms/image/chKOue2fqmnBR91" target="_blank"><img src="https://s2.loli.net/2022/04/25/chKOue2fqmnBR91.png" ></a>
+![img](https://img-blog.csdnimg.cn/img_convert/de6d2b213f112297298f3e223bf08f28.png)
 
-**流程说明：**
+流程说明：
 
-三个部分：
-
-客户端（浏览器）发送请求到 `DispatcherServlet`。
-
-`DispatcherServlet` 根据请求信息调用 `HandlerMapping`，解析请求对应的 `Handler`。
-
-
-
-解析到对应的 `Handler`（也就是 `Controller` 控制器）后，开始由 `HandlerAdapter` 适配器处理。
-
-`HandlerAdapter` 会根据 `Handler `来调用真正的处理器来处理请求和相应的业务逻辑。
-
-处理器处理完业务后，会返回一个 `ModelAndView` 对象，`Model` 是返回的数据对象，`View` 是一个逻辑上的 `View`。
-
-
-
-`ViewResolver` 会根据逻辑 `View` 查找实际的 `View`。
-
-`DispaterServlet` 把返回的 `Model` 传给 `View`（视图渲染）。
-
-把 `View` 返回给请求者（浏览器）
+1. 客户端（浏览器）**发送请求，** `DispatcherServlet`**拦截请求。**
+2. `DispatcherServlet` 根据请求信息调用 `HandlerMapping` 。`HandlerMapping` 根据 uri 去匹配**查找**能处理的 `Handler`（也就是我们平常说的 `Controller` 控制器）。
+3. `DispatcherServlet` 调用 `HandlerAdapter`适配**执行** `Handler` 。
+4. `Handler` 完成对用户请求的处理后，会返回一个 `ModelAndView` 对象给`DispatcherServlet`，`ModelAndView` 顾名思义，包含了数据模型以及相应的视图的信息。`Model` 是返回的数据对象，`View` 是个逻辑上的 `View`。
+5. `ViewResolver` 会根据逻辑 `View` 查找实际的 `View`。
+6. `DispaterServlet` 把返回的 `Model` 传给 `View`（视图渲染）。
+7. 把 `View` 返回给请求者（浏览器）
 
 
 

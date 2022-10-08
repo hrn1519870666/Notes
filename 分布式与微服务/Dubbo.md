@@ -24,7 +24,7 @@ RPC框架的目标就是要2~9这些步骤都封装起来，这些细节对用�
 
 ## Dubbo
 
-Apache Dubbo 是一款**高性能、轻量级的开源Java RPC框架，**它提供了三大核心功能：**面向接口的远程方法调用，智能容错和负载均衡，以及服务自动注册和发现。**
+Apache Dubbo 是一款**高性能、轻量级的开源Java RPC框架，**它提供了三大核心功能：**面向接口的远程方法调用，负载均衡和智能容错，以及服务自动注册和发现。**
 
 ![图片](https://mmbiz.qpic.cn/mmbiz_png/uJDAUKrGC7JJjARRqcZibY4ZPv60renshLSMRQe7NJpvDFrQMChLxI3BqIYQXrZvfs28iadQ1dDB4p84ydyb3KtQ/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1)
 
