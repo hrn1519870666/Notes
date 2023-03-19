@@ -43,13 +43,7 @@ HTTP/2.0 将报文分成 HEADERS 帧和 DATA 帧，它们都是二进制格式�
 
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/86e6a91d-a285-447a-9345-c5484b8d0c47.png" width="400"/> </div><br>
 
-在通信过程中，只会有一个 TCP 连接存在，它承载了任意数量的双向数据流（Stream）。
-
-- 一个数据流（Stream）都有一个唯一标识符和可选的优先级信息，用于承载双向信息。
-- 消息（Message）是与逻辑请求或响应对应的完整的一系列帧。
-- 帧（Frame）是最小的通信单位，来自不同数据流的帧可以交错发送，然后再根据每个帧头的数据流标识符重新组装。
-
-<div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/af198da1-2480-4043-b07f-a3b91a88b815.png" width="600"/> </div><br>
+帧（Frame）是最小的通信单位，来自不同数据流的帧可以交错发送，然后再根据每个帧头的数据流标识符重新组装。
 
 
 
@@ -109,7 +103,7 @@ HTTP 有以下安全性问题：
 
 ### 认证（CA证书）
 
-中间人攻击的场景：
+**中间人攻击**的场景：
 
 假设 S 公钥在信道中传输，那么很有可能存在一个攻击者 A，发送给 C 一个诈包，假装是 S 公钥，其实是诱饵服务器 AS 的公钥。当 C 收获了 AS 的公钥（却以为是 S 的公钥），C 后续就会使用 AS 公钥对数据进行加密，并在公开信道传输，那么 A 将捕获这些加密包，用 AS 的私钥解密，就截获了 C 本要给 S 发送的内容。
 
@@ -205,24 +199,13 @@ DELETE /idX/delete HTTP/1.1   -> Returns 404
 ### 2XX 成功
 
 -   **200 OK**  
-
--   204 No Content  ：请求已经成功处理，但是返回的响应报文不包含实体的主体部分。一般在只需要从客户端往服务器发送信息，而不需要返回数据时使用。
-
 -   206 Partial Content  ：表示客户端进行了范围请求，响应报文包含由 Content-Range 指定范围的实体内容。
 
 ### 3XX 重定向
 
 -   301 Moved Permanently  ：永久性重定向
-
 -   302 Found ：临时性重定向
-
--   303 See Other  ：和 302 有着相同的功能，但是 303 明确要求客户端应该采用 GET 方法获取资源。
-
--   注：虽然 HTTP 协议规定 301、302 状态下重定向时不允许把 POST 方法改成 GET 方法，但是大多数浏览器都会在 301、302 和 303 状态下的重定向把 POST 方法改成 GET 方法。
-
 -   304 Not Modified  ：如果请求报文首部包含一些条件，例如：If-Match，If-Modified-Since，If-None-Match，If-Range，If-Unmodified-Since，如果不满足条件，则服务器会返回 304 状态码。
-
--   307 Temporary Redirect  ：临时重定向，与 302 的含义类似，但是 307 要求浏览器不会把重定向请求的 POST 方法改成 GET 方法。
 
 ### 4XX 客户端错误
 
