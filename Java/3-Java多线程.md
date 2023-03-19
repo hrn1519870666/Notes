@@ -1155,39 +1155,6 @@ produce..produce..consume..consume..produce..consume..produce..consume..produce.
 
 
 
-###  AQS 
-
- AQS的全称为`AbstractQueuedSynchronizer`，抽象的队列式的同步器。
-
-**AQS 是一个用来构建锁和同步器的框架。**比如我们提到的 `ReentrantLock`，`Semaphore`，其他的诸如 `ReentrantReadWriteLock`，`SynchronousQueue`，`FutureTask` 等等皆是基于 AQS 的。
-
-#### 原理
-
-**AQS 核心思想是，如果被请求的共享资源空闲，则将当前请求资源的线程设置为有效的工作线程，并且将共享资源设置为锁定状态。如果被请求的共享资源被占用，那么就需要一套线程阻塞等待以及被唤醒时锁分配的机制，这个机制 AQS 是用 CLH 队列锁实现的，即将暂时获取不到锁的线程加入到队列中。**
-
-<img src="https://tva1.sinaimg.cn/large/008i3skNgy1gtt57mncpoj60nc0hk0tx02.jpg" alt="img" style="zoom:50%;" />
-
-> CLH队列是一个虚拟的双向队列（虚拟的双向队列即不存在队列实例，仅存在结点之间的关联关系）。AQS 是将每条请求共享资源的线程封装成一个 CLH 锁队列的一个结点（Node）来实现锁的分配。
-
- AQS原理图：
-
-![AQS原理图](https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/2019-6/AQS原理图.png)
-
-AQS 使用一个 int 变量state来表示同步状态，通过内置的 FIFO 队列来完成获取资源线程的排队工作。AQS 使用 CAS 对该同步状态进行原子操作实现对其值的修改。
-
-```java
-private volatile int state;//共享变量，使用volatile修饰保证线程可见性
-```
-
-#### AQS 对资源的共享方式
-
-- **Exclusive**（独占）：只有一个线程能执行，如 `ReentrantLock`。
-- **Share**（共享）：多个线程可同时执行，如`CountDownLatch`、 `CyclicBarrier`、`Semaphore`、`ReadWriteLock` 。
-
-自定义同步器在实现时只需要实现共享资源 state 的获取与释放方式即可，至于具体线程等待队列的维护（如获取资源失败入队/唤醒出队等），AQS 已经在顶层实现好了。
-
-
-
 ### 锁优化
 
 #### 锁消除
