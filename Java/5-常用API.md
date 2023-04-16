@@ -2,8 +2,6 @@
 
 ```java
 int length()：返回字符串的长度
-char charAt(int index)： 返回某索引处的字符
-boolean isEmpty()：判断是否是空字符串
 String toLowerCase()：使用默认语言环境，将 String 中的所有字符转换为小写
 String toUpperCase()：使用默认语言环境，将 String 中的所有字符转换为大写
 String trim()：返回字符串的副本，忽略前导空白和尾部空白
@@ -26,7 +24,7 @@ char[] charArray = str1.toCharArray();
 
 //char[] → String
 char [] arr = new char[]{'h','e','l','l','o'};
-String str2 = new String(arr);
+String str2 = new String(arr);   // String() 不是方括号
 ```
 
 
@@ -48,7 +46,15 @@ public char charAt(int n)
 
 集合 --->数组：toArray()
 
+```
+String[] ans = list.toArray(new String[0]);
+```
+
 数组 --->集合：Arrays类的静态方法asList()
+
+```
+List<String> ans = Arrays.asList(ss);
+```
 
 
 

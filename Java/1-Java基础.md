@@ -2,7 +2,7 @@
 
 ### String 为什么是不可变的?
 
-`String` 类中使用 **`final` 关键字修饰字符数组**来保存字符串，**`private final char value[]`，**所以 String 对象是不可变的。
+`String` 类中使用 **`final` 关键字修饰字符数组**来保存字符串，**`private final char[] value`，**所以 String 对象是不可变的。
 
 
 
@@ -146,6 +146,10 @@ Percussion is playing...
 
 
 
+**多态的底层原理**
+
+
+
 ### BIO,NIO,AIO
 
 #### 阻塞与非阻塞
@@ -162,11 +166,9 @@ Percussion is playing...
 
 同步和异步指的是**一个执行流程中每个方法是否必须依赖前一个方法完成后才可以继续执行。假设我们的执行流程中，依次是方法一和方法二。**
 
-同步指的是调用一旦开始，调用者必须等到方法调用返回后，才能继续后续的行为。即方法二一定要等到方法一执行完成后才可以执行。
+同步指的是调用一旦开始，调用者必须等到方法调用返回后，才能继续后续的行为。即方法二要等到方法一执行完成后才可以执行。
 
 异步指的是调用立刻返回，调用者不必等待方法内的代码执行结束，就可以继续后续的行为。（具体方法内的代码交由另外的线程执行完成后，可能会进行回调）。即执行方法一的时候，直接交给其他线程执行，不由主线程执行，也就不会阻塞主线程，所以方法二不必等到方法一完成即可开始执行。
-
-同步与异步关注的是方法的执行方是主线程还是其他线程，主线程的话需要等待方法执行完成，其他线程的话无需等待立刻返回方法调用，主线程可以直接执行接下来的代码。
 
 
 
@@ -174,7 +176,7 @@ Percussion is playing...
 
 <img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6a9e704af49b4380bb686f0c96d33b81~tplv-k3u1fbpfcp-watermark.image" alt="图源：《深入拆解Tomcat & Jetty》" style="zoom:50%;" />
 
-在客户端连接数量不高的情况下，是没问题的。但是，当面对十万甚至百万级连接的时候，传统的 BIO 模型是无能为力的。因此，我们需要一种更高效的 I/O 处理模型来应对更高的并发量。
+在客户端连接数量不高的情况是没问题的。但是，当面对十万甚至百万级连接的时候，传统的 BIO 模型是无能为力的。
 
 
 
@@ -313,6 +315,12 @@ Integer.valueOf()、Integer m = 123、String.intern()、String s = "a" ：缓存
 
 
 
+### this
+
+当前类的对象，例如return this;
+
+
+
 ### == 与 equals
 
 **==：基本数据类型比较的是值，引用数据类型比较的是内存地址。**
@@ -381,8 +389,8 @@ public final native Class<?> getClass()
 **泛型擦除：泛型信息只存在于代码编译阶段，在进入 JVM 之前，与泛型相关的信息会被擦除掉。**
 
 ```java
-List<String> l1 = new ArrayList<String>();
-List<Integer> l2 = new ArrayList<Integer>();
+List<String> l1 = new ArrayList<>();
+List<Integer> l2 = new ArrayList<>();
 		
 System.out.println(l1.getClass() == l2.getClass());
 ```

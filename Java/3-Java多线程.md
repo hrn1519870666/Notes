@@ -1,14 +1,6 @@
-### 进程和线程?
+### Java线程有哪些状态?
 
-进程是**程序的一次执行过程，**是系统运行程序的基本单位，因此进程是**动态**的。系统运行一个程序就是一个进程从创建，运行到消亡的过程。
-
-线程是一个比进程更小的执行单位。进程在其执行的过程中可以产生多个线程。**同类的多个线程**共享进程的**堆**和**方法区**资源，但每个线程有自己的**程序计数器**、**虚拟机栈**和**本地方法栈**，所以系统在**产生一个线程，或是在各个线程之间切换时，开销要比进程小得多（同一进程的不同线程之间切换，不消耗资源）。**进程作为**资源分配**的基本单位，线程作为**资源调度**的基本单位。
-
-
-
-### 线程有哪些基本状态?
-
-Java 线程在运行的生命周期中的指定时刻只可能处于下面 **6 种**不同状态的其中一个状态
+6种状态：
 
 ![Java线程的状态](https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/19-1-29/Java%E7%BA%BF%E7%A8%8B%E7%9A%84%E7%8A%B6%E6%80%81.png)
 
@@ -22,9 +14,7 @@ Java 线程状态变迁如下图所示
 
 多线程编程中一般线程的个数都大于 CPU 核心的个数，而一个 CPU 核心在任意时刻只能被一个线程使用，为了让这些线程都能得到有效执行，CPU 采取的策略是为每个线程分配时间片并轮转的形式。当一个线程的时间片用完的时候就会重新处于就绪状态让给其他线程使用，这个过程就属于一次上下文切换。
 
-概括来说就是：当前任务在执行完 CPU 时间片切换到另一个任务之前会先保存自己的状态，以便下次再切换回这个任务时，可以再加载这个任务的状态。**任务从保存到再加载的过程就是一次上下文切换**。
-
-上下文切换通常是计算密集型的。也就是说，它需要相当可观的处理器时间，在每秒几十上百次的切换中，每次切换都需要纳秒量级的时间。所以，上下文切换对系统来说意味着消耗大量的 CPU 时间，事实上，可能是操作系统中时间消耗最大的操作。
+上下文切换通常是计算密集型的。它需要相当可观的处理器时间，在每秒几十上百次的切换中，每次切换都需要纳秒量级的时间。所以，上下文切换对系统来说意味着消耗大量的 CPU 时间。
 
 Linux 相比与其他操作系统，其上下文切换和模式切换的时间消耗非常少。
 
@@ -215,7 +205,7 @@ Java通过 对象.方法 的形式调用方法，锁的就是点之前的对象�
 
 ##### **3. 同步一个类**  
 
-以类对象为锁，进入同步代码块前需要获得当前类对象的锁。
+以类对象为锁，进入同步代码块前需要获得当前**类对象**的锁。
 
 不是在类上加synchronized，而是锁代码块：
 
@@ -260,7 +250,7 @@ public static void main(String[] args) {
 
 **注意：**
 
-1. 使用使用synchronized修饰实例对象时，如果一个线程正在访问实例对象的一个synchronized方法时，其它线程不仅不能访问该synchronized方法，该对象的其它synchronized方法也不能访问，因为**一个对象只有一个监视器锁对象，**但是其它线程可以访问该对象的非synchronized方法。
+1. 如果一个线程正在访问实例对象的一个synchronized方法时，该对象的其它synchronized方法也不能访问，因为**一个对象只有一个监视器锁对象。**
 2. 使用synchronized修饰类和对象时，由于类对象和实例对象分别拥有自己的监视器锁，因此不会相互阻塞。
 3. 线程A访问实例对象的非static但synchronized方法时，线程B也可以同时访问实例对象的static synchronized方法，因为前者获取的是实例对象的监视器锁，而后者获取的是类对象的监视器锁，两者不存在互斥关系。
 
@@ -273,8 +263,6 @@ public static void main(String[] args) {
 `synchronized` 修饰代码块时，使用的是 **`monitorenter` 和 `monitorexit` 指令，其中 `monitorenter` 指令指向同步代码块的开始位置，`monitorexit` 指令则指明结束位置。**
 
 **在执行`monitorenter`时，会尝试获取对象的锁，如果锁的计数器为 0 则表示锁可以被获取，获取后将锁计数器设为 1 也就是加 1。在执行 `monitorexit` 指令后，将锁计数器设为 0，表明锁被释放。**
-
-如果获取对象锁失败，当前线程就要阻塞等待，直到锁被另外一个线程释放为止。
 
 #####  修饰方法的的情况
 
@@ -301,7 +289,7 @@ Lock是具体类，是API层面的锁（java.util.）
 
 **2.使用方法**
 
-sychronized不需要手动释放锁，当synchronized代码执行完后系统会自动让线程释放对锁的占用。
+sychronized不需要手动释放锁，当synchronized代码执行完后线程自动释放锁。
 
 ReentrantLock需要手动释放锁，若没有主动释放锁，可能导致死锁，需要lock()和 unlock()方法配合try/finally语句块来完成。
 
@@ -444,7 +432,7 @@ class ShareData {
 
 ##### 重量级锁
 
-忙等是有限度的（计数器记录自旋次数，默认允许循环10次）。如果锁竞争情况严重，达到最大自旋次数的线程，会将轻量级锁升级为重量级锁（依然是CAS修改锁标志位，但不修改持有锁的线程ID）。当后续线程尝试获取锁时，发现被占用的锁是重量级锁，则直接进入阻塞状态（而不是忙等），等待将来被唤醒。
+自旋是有限度的（计数器记录自旋次数，默认允许循环10次）。如果锁竞争情况严重，达到最大自旋次数的线程，会将轻量级锁升级为重量级锁（依然是CAS修改锁标志位，但不修改持有锁的线程ID）。当后续线程尝试获取锁时，发现被占用的锁是重量级锁，则直接进入阻塞状态（而不是自旋），等待将来被唤醒。
 
 
 
@@ -488,7 +476,7 @@ class ShareData {
 
 ### volatile关键字
 
-volatile是Java虚拟机提供的轻量级的同步机制。
+volatile是JVM提供的轻量级的同步机制。
 
 #### 1.保证可见性
 
@@ -581,31 +569,15 @@ Java内存模型规定在某些场景下（一共8条），**前面一个操作�
 
 ### CAS
 
-CAS的全称为compare and swap，比较并交换。比较当前工作内存中的值和主内存中的值，如果相同则执行规定操作，比如更新主内存值，否则继续比较，直到工作内存中的值和主内存中的值一致为止。
-
-#### CAS应用
-
 CAS有3个操作数，（主）内存值V，预期值A，要修改的更新值B。如果预期值A和内存值V相等，则将内存值V修改为新值B，否则进行循环比较，直到相等为止。
 
 #### 底层原理
 
-CAS是一条CPU并发原语（简称原语），底层靠unsafe类保证原子性。
+CAS是一条CPU并发原语（简称原语）。原语属于操作系统用语范畴，是由若干条指令组成的，用于完成某个功能的一个过程，并且原语的执行必须是连续的，在执行过程中不允许被中断，也就是说CAS是一条CPU的原子指令，不会造成数据不一致问题（线程安全）。
 
-Unsafe 是CAS核心类，由于Java方法无法直接访问底层系统，需要通过本地（native）方法来访问，Unsafe相当 于一个后门，基于该类可以直接操作特定内存数据。Unsafe类存在于 sun.misc 包中，其内部方法操作可以像C的指针一样直接操作内存。**Java中CAS操作的执行依赖于Unsafe类的方法，Unsafe类中的所有方法都是native修饰的，也就是说Unsafe类中的方法都直接调用操作系统底层资源执行相应任务。**
+**CAS底层靠unsafe类保证原子性，Unsafe类中的所有方法都是native修饰的，也就是说Unsafe类中的方法都直接调用操作系统底层资源执行相应任务。**
 
-CAS并发原语体现在JAVA语言中就是Unsafe类中各个方法。调用Unsafe类中的CAS方法，JVM会帮我们实现CAS汇编指令。这是一种完全依赖于硬件的功能，通过他实现了原子操作。CAS是一种系统原语，原语属于操作系统用语范畴，是由若干条指令组成的，用于完成某个功能的一个过程，并且原语的执行必须是连续的，在执行过程中不允许被中断，也就是说CAS是一条CPU的原子指令，不会造成数据不一致问题（线程安全）。
-
-以下代码使用了 AtomicInteger 执行了自增的操作。
-
-```java
-private AtomicInteger cnt = new AtomicInteger();
-
-public void add() {
-    cnt.getAndIncrement();
-}
-```
-
-以下代码是getAndIncrement() 的源码，它调用了Unsafe类的 getAndAddInt() 。
+以下代码是原子整型 AtomicInteger 的getAndIncrement() 方法的源码，它调用了Unsafe类的 getAndAddInt() 。
 
 ```java
 public final int getAndIncrement() {
@@ -643,67 +615,7 @@ CAS没有加锁，多个线程都可以直接操作共享资源，在实际去�
 
 线程1从内存位置V取出A，线程2同时也从内存取出A，并且线程2进行一些操作将值改为B，然后线程2又将V位置数据改成A，这时候线程1进行CAS操作发现内存中的值依然时A，然后线程1操作成功。尽管线程1的CAS操作成功，但是不代表这个过程没有问题。
 
-**解决方法**： J.U.C 包提供了一个带有标记的原子引用类 AtomicStampedReference 来解决这个问题，它可以通过控制变量值的版本来保证 CAS 的正确性。在变量前面加上版本号，每次变量更新的时候变量的**版本号都`+1`**，即`A->B->A`就变成了`1A->2B->3A`。
-
-```java
-public class ABADemo {
-	static AtomicStampedReference<Integer> atomicStampedReference = 
-        new AtomicStampedReference<>(100, 1);
-    
-	public static void main(String[] args) {
-		new Thread(() -> {
-			int stamp = atomicStampedReference.getStamp();
-			System.out.println(Thread.currentThread().getName() + "\t第1次版本号" +
-			stamp);
-			try {
-                // 等待线程2获得相同的初始版本号
-				TimeUnit.SECONDS.sleep(1);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-            // ABA
-			atomicStampedReference.compareAndSet(100, 101,
-			atomicStampedReference.getStamp(), atomicStampedReference.getStamp() + 1);
-			System.out.println(Thread.currentThread().getName() + "\t第2次版本号" +
-			atomicStampedReference.getStamp());
-            
-			atomicStampedReference.compareAndSet(101, 100,
-			atomicStampedReference.getStamp(), atomicStampedReference.getStamp() + 1);
-			System.out.println(Thread.currentThread().getName() + "\t第3次版本号" +
-			atomicStampedReference.getStamp());
-		}, "Thread 1").start();
-        
-		new Thread(() -> {
-			int stamp = atomicStampedReference.getStamp();
-			System.out.println(Thread.currentThread().getName() + "\t第1次版本号" +
-			stamp);
-			try {
-                // 等待线程1执行完ABA操作
-				TimeUnit.SECONDS.sleep(3);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			boolean result = atomicStampedReference.compareAndSet(100, 200, stamp,
-			stamp + 1);
-			System.out.println(Thread.currentThread().getName() + "\t修改是否成功" +
-			result + "\t当前最新实际版本号：" + atomicStampedReference.getStamp());
-			System.out.println(Thread.currentThread().getName() + "\t当前最新实际值：" +
-			atomicStampedReference.getReference());
-		}, "Thread 2").start();
-	}
-}
-```
-
-输出结果：
-
-```java
-Thread 1 第1次版本号1
-Thread 2 第1次版本号1
-Thread 1 第2次版本号2
-Thread 1 第3次版本号3
-Thread 2 修改是否成功false 当前最新实际版本号：3
-Thread 2 当前最新实际值：100
-```
+**解决方法**： J.U.C 包提供了一个带有标记的原子引用类 AtomicStampedReference 来解决这个问题，它可以通过控制变量值的版本来保证 CAS 的正确性。在变量前面加上版本号，每次变量更新的时候变量的**版本号都`+1`**，即`A->B->A`就变成了`1A->2B->3A`
 
 ##### 2.循环时间长，开销大
 
@@ -726,28 +638,28 @@ Thread 2 当前最新实际值：100
 - 公平锁：按照线程在队列中的排队顺序，先到者先拿到锁。
 - 非公平锁：当线程要获取锁时，无视队列顺序直接去抢锁，如果抢锁失败，就再采用类似公平锁那种方式。
 
-区别：线程执行同步代码块时，是否会去尝试获取锁。如果会尝试获取锁，就是非公平的。如果不会尝试获取锁，直接进队列，再等待唤醒，就是公平的。
+线程执行同步代码块时，是否会去尝试获取锁。如果会尝试获取锁，就是非公平的。如果不会尝试获取锁，直接进队列，再等待唤醒，就是公平的。
 
 
 
 #### 可重入锁（递归锁）
 
-同一线程外层函数获得锁之后，内层递归函数仍然能获取该锁，同一个线程，在外层方法获取了锁，在进入内层方法时会自动获取锁。也就是说，线程可以进入任何一个它已经拥有的锁所同步着的代码块。
+同一个线程，在外层方法获取了锁，在进入内层方法时会自动获取锁。也就是说，线程可以进入任何一个它已经拥有的锁所同步着的代码块。
 
 Synchronized / ReentrantLock 是典型的可重入锁。
 
 可重入锁最大的作用是避免死锁。
 
 ```java
-class Phone{
+public class Phone{
     // 两个方法都是synchronized
 	public synchronized void sendSMS()throws Exception{
-		System.out.println(Thread.currentThread().getName()+"sendSMS");
+		System.out.println(Thread.currentThread().getName() + " sendSMS");
 		Thread.sleep(3000);
 		sendEmail();
 	}
 	public synchronized void sendEmail() throws Exception{
-		System.out.println(Thread.currentThread().getName()+"sendEmail");
+		System.out.println(Thread.currentThread().getName() +" sendEmail");
 	}
 }
 
@@ -755,6 +667,7 @@ class Phone{
 		Phone phone = new Phone();
 		new Thread(() -> {
 			try {
+                // 获取到了phone对象锁
 				phone.sendSMS();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -771,6 +684,13 @@ class Phone{
     }
 
 }
+```
+
+```bash
+Thread 1 sendSMS
+Thread 1 sendEmail
+Thread 2 sendSMS
+Thread 2 sendEmail
 ```
 
 
@@ -794,18 +714,171 @@ ReentrantReadWriteLock的读锁是共享，写锁是独占，写的时候只能�
 
 #### 乐观锁和悲观锁
 
-乐观锁：总是假设最好的情况，每次去操作数据都认为不会被别的线程修改数据，所以在每次操作数据的时候都不会给数据加锁，**即在线程对数据进行操作的时候，别的线程不会阻塞仍然可以对数据进行操作，只有在需要更新数据的时候才会去判断数据是否被别的线程修改过，如果数据被修改过则会拒绝操作并且返回错误信息给用户。**`CAS`是乐观锁思想的实现。
+乐观锁：总是假设最好的情况，每次去操作数据都认为不会被别的线程修改数据，所以在每次操作数据的时候都不会给数据加锁，**即在线程对数据进行操作的时候，别的线程不会阻塞仍然可以对数据进行操作，只有在需要更新数据的时候才会去判断数据是否被别的线程修改过，如果数据被修改过则会拒绝操作。**`CAS`是乐观锁思想的实现。
 
-悲观锁：总是假设最坏的情况，**每次去操作数据时候都认为会被别的线程修改数据，所以在每次操作数据的时候都会给数据加锁，让别的线程无法操作这个数据，别的线程会一直阻塞直到获取到这个数据的锁**。`synchronized`和`ReentrantLock`等独占锁就是悲观锁思想的实现。
+悲观锁：总是假设最坏的情况，**每次去操作数据时候都认为会被别的线程修改数据，所以在每次操作数据的时候都会给数据加锁，让别的线程无法操作这个数据，一直阻塞直到获取到这个数据的锁**。`synchronized`和`ReentrantLock`等独占锁就是悲观锁思想的实现。
 
 ##### 乐观锁和悲观锁的使用情景（CAS和synchronized的使用情景）
 
-1. 对于资源竞争较少（线程冲突较轻）的情况，使用synchronized同步锁进行线程阻塞和唤醒切换以及用户态内核态间的切换操作浪费CPU资源；而CAS基于硬件实现，不需要切换线程，不需要进入内核，自旋几率较少，因此可以获得更高的性能。
+1. 对于资源竞争较少（线程冲突较轻）的情况，使用synchronized同步锁进行线程阻塞和唤醒间的切换，以及用户态和内核态间的切换操作浪费CPU资源；而CAS不需要切换线程，不需要进入内核，自旋几率较少，因此可以获得更高的性能。
 2. 对于资源竞争严重的情况，CAS自旋的概率会比较大，从而浪费更多的CPU资源，效率低于synchronized。
 
 **简单来说，CAS适用于读多写少的情况（冲突一般较少），synchronized适用于写多的情况下（冲突一般较多）**
 
 
+
+### 线程池
+
+#### **使用线程池的好处**：
+
+- **降低资源消耗**。通过重复利用已创建的线程，来降低线程创建和销毁造成的消耗。
+
+- **提高响应速度**。当任务到达时，任务不需要等到线程创建就能立即执行。
+
+- **提高线程的可管理性**。线程是稀缺资源，如果无限制的创建，不仅会消耗系统资源，还会降低系统的稳定性，使用线程池可以进行统一的分配，调优和监控。
+
+#### ThreadPoolExecutor 类分析
+
+```java
+    /**
+     * 用给定的初始参数创建一个新的ThreadPoolExecutor。
+     */
+    public ThreadPoolExecutor(int corePoolSize,
+                              int maximumPoolSize,
+                              long keepAliveTime,
+                              TimeUnit unit,
+                              BlockingQueue<Runnable> workQueue,
+                              ThreadFactory threadFactory,
+                              RejectedExecutionHandler handler) {
+        if (corePoolSize < 0 ||
+            maximumPoolSize <= 0 ||
+            maximumPoolSize < corePoolSize ||
+            keepAliveTime < 0)
+            throw new IllegalArgumentException();
+        if (workQueue == null || threadFactory == null || handler == null)
+            throw new NullPointerException();
+        this.corePoolSize = corePoolSize;
+        this.maximumPoolSize = maximumPoolSize;
+        this.workQueue = workQueue;
+        this.keepAliveTime = unit.toNanos(keepAliveTime);
+        this.threadFactory = threadFactory;
+        this.handler = handler;
+    }
+```
+
+**`ThreadPoolExecutor` 3 个最重要的参数：**
+
+- **`corePoolSize` : 核心线程数，线程池的基本大小，即在没有任务需要执行的时候线程池的大小，并且只有在工作队列（workQueue）满了的情况下才会创建超出这个数量的线程。**
+- **`workQueue`: 工作队列，当新任务来的时候会先判断当前运行的线程数量是否达到核心线程数，如果达到的话，新任务就会被存放在队列中。**
+- **`maximumPoolSize` : 线程池中的当前线程数目不会超过该值。如果工作队列中任务已满，并且当前线程个数小于maximumPoolSize，那么会创建新的线程来执行任务。**
+
+`ThreadPoolExecutor`其他参数:
+
+1. **`keepAliveTime`**:当线程池中的线程数量大于 `corePoolSize` 的时候，如果这时没有新的任务提交，核心线程外的线程不会立即销毁，而是会等待，直到等待的时间超过了 `keepAliveTime`才会被回收销毁；
+2. **`unit`** : `keepAliveTime` 参数的时间单位。
+3. **`threadFactory`** :executor 创建新线程的时候会用到。
+4. **`handler`** :拒绝策略。
+
+#####  `ThreadPoolExecutor` 拒绝策略
+
+**如果当前同时运行的线程数量达到最大线程数量`maximumPoolSize`并且队列也已经被放满了任务时，**`ThreadPoolTaskExecutor` 定义一些策略:
+
+- **`ThreadPoolExecutor.AbortPolicy`**：线程池默认的拒绝策略。抛出 `RejectedExecutionException`来拒绝新任务的处理。
+- **`ThreadPoolExecutor.CallerRunsPolicy`**：该策略直接在调用者线程中运行当前被丢弃的任务，但是任务提交线程的性能极有可能急剧下降。
+- **`ThreadPoolExecutor.DiscardPolicy`：** 不处理新任务，直接丢弃掉。
+- **`ThreadPoolExecutor.DiscardOldestPolicy`：** 此策略将丢弃最早的未处理的任务请求。
+
+
+
+#### 线程池原理总结
+
+![图解线程池实现原理](https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/2019-7/图解线程池实现原理.png)
+
+
+
+
+
+### ThreadLocal
+
+`ThreadLocal`是一个在多线程中为每一个线程创建单独的变量副本的类。**如果你创建了一个`ThreadLocal`类型的变量，那么访问这个变量的每个线程都会有这个变量的本地副本,** 避免因多线程操作共享变量而导致的数据不一致的情况，保证线程安全**（除了加锁方式以外，保证线程安全的方式）。**
+
+#### 原理
+
+`ThreadLocal`类的`set()`方法
+
+```java
+    public void set(T value) {
+        Thread t = Thread.currentThread();
+        ThreadLocalMap map = getMap(t);
+        if (map != null)
+            map.set(this, value);
+        else
+            createMap(t, value);
+    }
+```
+
+在这个方法内部我们看到，首先通过getMap(Thread t)方法获取一个和当前线程相关的ThreadLocalMap，然后将变量的值设置到ThreadLocalMap对象中，如果获取到的ThreadLocalMap对象为空，就通过createMap方法创建。
+
+线程隔离的秘密，就在于ThreadLocalMap类。**ThreadLocalMap是ThreadLocal类的一个静态内部类，每个`Thread`中都具备一个`ThreadLocalMap`，而`ThreadLocalMap`可以存储以`ThreadLocal`为 key ，Object 对象（你所设置的对象）为 value 的键值对。**它实现了键值对的set和get，**每个线程中都有一个独立的ThreadLocalMap副本，它所存储的值，只能被当前线程读取和修改。ThreadLocal类通过操作每一个线程特有的ThreadLocalMap副本，从而实现了变量访问，在不同线程中的隔离。因为每个线程的变量都是自己特有的，完全不会有并发错误。**
+
+[ThreadLocal底层原理](https://blog.csdn.net/mweibiao/article/details/90111680?spm=1001.2101.3001.6650.8&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-8-90111680-blog-79958414.235%5Ev29%5Epc_relevant_default_base3&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-8-90111680-blog-79958414.235%5Ev29%5Epc_relevant_default_base3&utm_relevant_index=15)
+
+
+
+### 线程安全
+
+多个线程不管以何种方式访问某个类，并且在主调代码中不需要进行同步，都能表现正确的行为。
+
+线程安全有以下几种实现方式：
+
+#### 1.不可变
+
+不可变的对象一定是线程安全的，不需要再采取任何的线程安全保障措施。只要一个不可变的对象被正确地构建出来，就永远也不会看到它在多个线程之中处于不一致的状态。
+
+不可变的类型：final 关键字修饰的基本数据类型，String类型等。
+
+#### 2.synchronized 和 ReentrantLock。
+
+#### 3.CAS
+
+#### 4.无同步方案
+
+要保证线程安全，并不是一定就要进行同步。如果一个方法本来就不涉及共享数据，那它自然就无须任何同步措施去保证正确性。
+
+**线程本地存储（Thread Local Storage）**
+
+##### 栈封闭
+
+多个线程访问同一个方法的**局部变量**时，不会出现线程安全问题，因为局部变量存储在虚拟机栈中，属于线程私有的。
+
+```java
+public class StackClosedExample {
+    public void add100() {
+        int cnt = 0;
+        for (int i = 0; i < 100; i++) {
+            cnt++;
+        }
+        System.out.println(cnt);
+    }
+}
+```
+
+```java
+public static void main(String[] args) {
+    StackClosedExample example = new StackClosedExample();
+    ExecutorService executorService = Executors.newCachedThreadPool();
+    executorService.execute(() -> example.add100());
+    executorService.execute(() -> example.add100());
+    executorService.shutdown();
+}
+```
+
+```html
+100
+100
+```
+
+##### 
 
 ### CountDownLatch
 
@@ -1057,192 +1130,3 @@ public static void main(String[] args) {
 produce..produce..consume..consume..produce..consume..produce..consume..produce..consume..
 ```
 
-
-
-### 线程池
-
-#### **使用线程池的好处**：
-
-- **降低资源消耗**。通过重复利用已创建的线程，来降低线程创建和销毁造成的消耗。
-
-- **提高响应速度**。当任务到达时，任务不需要等到线程创建就能立即执行。
-
-- **提高线程的可管理性**。线程是稀缺资源，如果无限制的创建，不仅会消耗系统资源，还会降低系统的稳定性，使用线程池可以进行统一的分配，调优和监控。
-
-#### ThreadPoolExecutor 类分析
-
-```java
-    /**
-     * 用给定的初始参数创建一个新的ThreadPoolExecutor。
-     */
-    public ThreadPoolExecutor(int corePoolSize,
-                              int maximumPoolSize,
-                              long keepAliveTime,
-                              TimeUnit unit,
-                              BlockingQueue<Runnable> workQueue,
-                              ThreadFactory threadFactory,
-                              RejectedExecutionHandler handler) {
-        if (corePoolSize < 0 ||
-            maximumPoolSize <= 0 ||
-            maximumPoolSize < corePoolSize ||
-            keepAliveTime < 0)
-            throw new IllegalArgumentException();
-        if (workQueue == null || threadFactory == null || handler == null)
-            throw new NullPointerException();
-        this.corePoolSize = corePoolSize;
-        this.maximumPoolSize = maximumPoolSize;
-        this.workQueue = workQueue;
-        this.keepAliveTime = unit.toNanos(keepAliveTime);
-        this.threadFactory = threadFactory;
-        this.handler = handler;
-    }
-```
-
-**`ThreadPoolExecutor` 3 个最重要的参数：**
-
-- **`corePoolSize` : 核心线程数，线程池的基本大小，即在没有任务需要执行的时候线程池的大小，并且只有在工作队列（workQueue）满了的情况下才会创建超出这个数量的线程。**
-- **`workQueue`: 工作队列，当新任务来的时候会先判断当前运行的线程数量是否达到核心线程数，如果达到的话，新任务就会被存放在队列中。**
-- **`maximumPoolSize` : 线程池中的当前线程数目不会超过该值。如果工作队列中任务已满，并且当前线程个数小于maximumPoolSize，那么会创建新的线程来执行任务。**
-
-`ThreadPoolExecutor`其他参数:
-
-1. **`keepAliveTime`**:当线程池中的线程数量大于 `corePoolSize` 的时候，如果这时没有新的任务提交，核心线程外的线程不会立即销毁，而是会等待，直到等待的时间超过了 `keepAliveTime`才会被回收销毁；
-2. **`unit`** : `keepAliveTime` 参数的时间单位。
-3. **`threadFactory`** :executor 创建新线程的时候会用到。
-4. **`handler`** :拒绝策略。
-
-#####  `ThreadPoolExecutor` 拒绝策略
-
-**如果当前同时运行的线程数量达到最大线程数量`maximumPoolSize`并且队列也已经被放满了任务时，**`ThreadPoolTaskExecutor` 定义一些策略:
-
-- **`ThreadPoolExecutor.AbortPolicy`**：线程池默认的拒绝策略。抛出 `RejectedExecutionException`来拒绝新任务的处理。
-- **`ThreadPoolExecutor.CallerRunsPolicy`**：该策略直接在调用者线程中运行当前被丢弃的任务，但是任务提交线程的性能极有可能急剧下降。
-- **`ThreadPoolExecutor.DiscardPolicy`：** 不处理新任务，直接丢弃掉。
-- **`ThreadPoolExecutor.DiscardOldestPolicy`：** 此策略将丢弃最早的未处理的任务请求。
-
-
-
-#### 线程池原理总结
-
-![图解线程池实现原理](https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/2019-7/图解线程池实现原理.png)
-
-
-
-
-
-### ThreadLocal
-
-`ThreadLocal`是一个在多线程中为每一个线程创建单独的变量副本的类。**如果你创建了一个`ThreadLocal`类型的变量，那么访问这个变量的每个线程都会有这个变量的本地副本,** 避免因多线程操作共享变量而导致的数据不一致的情况，保证线程安全**（除了加锁方式以外，保证线程安全的方式）。**
-
-#### 原理
-
-`ThreadLocal`类的`set()`方法
-
-```java
-    public void set(T value) {
-        Thread t = Thread.currentThread();
-        ThreadLocalMap map = getMap(t);
-        if (map != null)
-            map.set(this, value);
-        else
-            createMap(t, value);
-    }
-```
-
-在这个方法内部我们看到，首先通过getMap(Thread t)方法获取一个和当前线程相关的ThreadLocalMap，然后将变量的值设置到ThreadLocalMap对象中，如果获取到的ThreadLocalMap对象为空，就通过createMap方法创建。
-
-线程隔离的秘密，就在于ThreadLocalMap类。**ThreadLocalMap是ThreadLocal类的一个静态内部类，每个`Thread`中都具备一个`ThreadLocalMap`，而`ThreadLocalMap`可以存储以`ThreadLocal`为 key ，Object 对象（你所设置的对象）为 value 的键值对。**它实现了键值对的设置和获取，**每个线程中都有一个独立的ThreadLocalMap副本，它所存储的值，只能被当前线程读取和修改。ThreadLocal类通过操作每一个线程特有的ThreadLocalMap副本，从而实现了变量访问，在不同线程中的隔离。因为每个线程的变量都是自己特有的，完全不会有并发错误。**
-
-
-
-### 锁优化
-
-#### 锁消除
-
-**锁消除是指对于被检测出不可能存在竞争的共享数据的锁进行消除。**
-锁消除主要是通过**逃逸分析**来支持，**如果堆上的共享数据不可能逃逸出去被其它线程访问到，那么就可以把它们当成私有数据对待，也就可以将它们的锁进行消除。**
-对于一些看起来没有加锁的代码，其实隐式的加了很多锁。例如下面的字符串拼接代码就隐式加了锁：
-
-```java
-public static String concatString(String s1, String s2, String s3) {
-    return s1 + s2 + s3;
-}
-```
-
-String 是一个不可变的类，编译器会对 String 的拼接自动优化。在 JDK 1.5 之前，会转化为 StringBuffer 对象的连续 append() 操作：
-
-```java
-public static String concatString(String s1, String s2, String s3) {
-    StringBuffer sb = new StringBuffer();
-    sb.append(s1);
-    sb.append(s2);
-    sb.append(s3);
-    return sb.toString();
-}
-```
-
-每个 append() 方法中都有一个同步块。虚拟机观察变量 sb，很快就会发现它的动态作用域被限制在 concatString() 方法内部。也就是说，sb 的所有引用永远不会逃逸到 concatString() 方法之外，其他线程无法访问到它，因此可以进行消除。
-
-#### 锁粗化
-
-**如果一系列的连续操作都对同一个对象反复加锁和解锁，频繁的加锁操作就会导致性能损耗。**上一节的示例代码中连续的 append() 方法就属于这类情况。**虚拟机如果探测到由这样的一串零碎的操作都对同一个对象加锁，将会把加锁的范围扩展（粗化）到整个操作序列的外部。**对于上一节的示例代码就是扩展到第一个 append() 操作之前直至最后一个 append() 操作之后，这样只需要加锁一次就可以了。
-
-
-
-### 线程安全
-
-多个线程不管以何种方式访问某个类，并且在主调代码中不需要进行同步，都能表现正确的行为。
-
-线程安全有以下几种实现方式：
-
-#### 1.不可变
-
-不可变（Immutable）的对象一定是线程安全的，不需要再采取任何的线程安全保障措施。只要一个不可变的对象被正确地构建出来，就永远也不会看到它在多个线程之中处于不一致的状态。
-
-不可变的类型：
-
-- final 关键字修饰的基本数据类型
-- String
-- 枚举类型
-- Number 部分子类，如 Long 和 Double 等数值包装类型，BigInteger 和 BigDecimal 等大数据类型。但同为 Number 的原子类 AtomicInteger 和 AtomicLong 则是可变的。
-
-#### 2.互斥同步：synchronized 和 ReentrantLock。
-
-#### 3.非阻塞同步：CAS
-
-#### 4.无同步方案
-
-要保证线程安全，并不是一定就要进行同步。如果一个方法本来就不涉及共享数据，那它自然就无须任何同步措施去保证正确性。
-
-##### 栈封闭
-
-多个线程访问同一个方法的局部变量时，不会出现线程安全问题，因为局部变量存储在虚拟机栈中，属于线程私有的。
-
-```java
-public class StackClosedExample {
-    public void add100() {
-        int cnt = 0;
-        for (int i = 0; i < 100; i++) {
-            cnt++;
-        }
-        System.out.println(cnt);
-    }
-}
-```
-
-```java
-public static void main(String[] args) {
-    StackClosedExample example = new StackClosedExample();
-    ExecutorService executorService = Executors.newCachedThreadPool();
-    executorService.execute(() -> example.add100());
-    executorService.execute(() -> example.add100());
-    executorService.shutdown();
-}
-```
-
-```html
-100
-100
-```
-
-##### 线程本地存储（Thread Local Storage）
