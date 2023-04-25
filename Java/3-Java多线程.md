@@ -1,138 +1,3 @@
-### Java线程有哪些状态?
-
-6种状态：
-
-![Java线程的状态](https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/19-1-29/Java%E7%BA%BF%E7%A8%8B%E7%9A%84%E7%8A%B6%E6%80%81.png)
-
-Java 线程状态变迁如下图所示
-
-![Java线程状态变迁](https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/19-1-29/Java%20%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E5%8F%98%E8%BF%81.png)
-
-
-
-### 什么是上下文切换?
-
-多线程编程中一般线程的个数都大于 CPU 核心的个数，而一个 CPU 核心在任意时刻只能被一个线程使用，为了让这些线程都能得到有效执行，CPU 采取的策略是为每个线程分配时间片并轮转的形式。当一个线程的时间片用完的时候就会重新处于就绪状态让给其他线程使用，这个过程就属于一次上下文切换。
-
-上下文切换通常是计算密集型的。它需要相当可观的处理器时间，在每秒几十上百次的切换中，每次切换都需要纳秒量级的时间。所以，上下文切换对系统来说意味着消耗大量的 CPU 时间。
-
-Linux 相比与其他操作系统，其上下文切换和模式切换的时间消耗非常少。
-
-
-
-### 为什么调用 start() 方法时会执行 run() 方法，为什么不能直接调用 run() 方法？
-
-new 一个 Thread，线程进入了新建状态。调用 `start()`方法，会启动一个线程并使线程进入了就绪状态，当分配到时间片后就可以开始运行了。 `start()` 会执行线程的相应准备工作，然后自动执行 `run()` 方法的内容，这是真正的多线程工作。 但是，直接执行 `run()` 方法，会把 `run()` 方法当成一个 main 线程下的普通方法去执行，并不会在某个线程中执行它，所以这并不是多线程工作。
-
-**总结： 调用 `start()` 方法方可启动线程并使线程进入就绪状态，直接执行 `run()` 方法的话不会以多线程的方式执行。**
-
-
-
-### 死锁的例子
-
-```java
-public class DeadLock {
- 
-    public static Object t1 = new Object();
-    public static Object t2 = new Object();
- 
-    public static void main(String[] args){
-        // 线程1
-        new Thread(){
-            @Override
-            public void run(){
-                synchronized (t1){
-                    System.out.println("Thread1 get t1");
- 
-                    try {
-                        Thread.sleep(100);
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
- 					// 在synchronized (t1)代码块内部，执行synchronized (t2)
-                    synchronized (t2){
-                        System.out.println("Thread1 get t2");
-                    }
-                }
-            }
-        }.start();
-        
- 		// 线程2
-        new Thread(){
-            @Override
-            public void run(){
-                synchronized (t2){
-                    System.out.println("Thread2 get t2");
- 
-                    try {
-                        Thread.sleep(100);
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
- 
-                    synchronized (t1){
-                        System.out.println("Thread2 get t1");
-                    }
-                }
-            }
-        }.start();
-    }
-```
-
-输出：
-
-```
-Thread1 get t1
-Thread2 get t2
-```
-
-对线程 2 的代码修改成下面这样就不会产生死锁了：
-
-```java
-	// 线程2
-    new Thread(){
-        @Override
-        public void run(){
-            // 先锁t1
-            synchronized (t1){
-                System.out.println("Thread2 get t1");
- 
-                try {
-                    Thread.sleep(100);
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
- 
-                synchronized (t2){
-                    System.out.println("Thread2 get t2");
-                }
-            }
-        }
-    }.start();
-}
-```
-
-输出
-
-```
-Thread1 get t1
-Thread1 get t2
-Thread2 get t1
-Thread2 get t2
-```
-
-线程 1 首先获得到t1的锁，然后再去获取t2的监视器锁，可以获取到。然后线程 1 释放了对t1、t2的锁的占用，线程 2 获取到就可以执行了。**破坏了循环等待条件，**因此避免了死锁。
-
-
-
-### sleep() 方法和 wait() 方法区别?
-
-- **`sleep()` 方法没有释放锁，而 `wait()` 方法释放了锁** 。
-- `sleep()`方法可以在任何地方使用；`wait()`方法则只能在**同步方法或同步块**中使用；
-- `sleep()`方法执行完成后，线程会自动苏醒。或者可以使用 `wait(long timeout)` 超时后线程会自动苏醒。`wait()` 方法被调用后，线程不会自动苏醒，需要别的线程调用同一个对象上的 `notify()`或者 `notifyAll()` 方法。
-
-
-
 ### synchronized 关键字
 
 **`synchronized` 是一种互斥锁，解决的是多个线程之间访问资源的同步性问题，它可以保证被修饰的方法或者代码块在任意时刻只能有一个线程执行。**
@@ -145,6 +10,7 @@ Thread2 get t2
 
 ```java
 public void func() {
+    // this锁的是调用该方法的对象
     synchronized (this) {
         // ...
     }
@@ -275,7 +141,7 @@ public static void main(String[] args) {
 1. `volatile`本质是在告诉JVM，当前变量在寄存器中的值是不确定的，需要从主存中读取； `synchronized`则是锁定当前变量，只有当前线程可以访问该变量，其他线程被阻塞住。
 2. `volatile` 关键字是线程同步的轻量级实现，不需要加锁，不会阻塞线程，所以`volatile`性能比`synchronized`关键字要好。
 3. `volatile` 关键字只能用于变量，而 `synchronized` 关键字可以修饰代码块、方法、类等。
-4. `volatile` 关键字能保证数据的可见性，但不能保证数据的原子性。`synchronized` 关键字两者都能保证。
+4. `volatile` 关键字**能保证数据的可见性，但不能保证数据的原子性。**`synchronized` 关键字两者都能保证。
 
 
 
@@ -428,7 +294,7 @@ class ShareData {
 
 一旦有第二个线程加入锁竞争，偏向锁就升级为轻量级锁。其他线程会通过自旋的形式尝试获取锁，线程不会阻塞，从而提高性能。
 
-在轻量级锁状态下继续锁竞争，没有抢到锁的线程将自旋，即不停地循环判断锁是否能够被成功获取。获取锁的操作，其实就是通过CAS修改对象头里的锁标志位。先比较当前锁标志位是否为“释放”，如果是则将其设置为“锁定”，代表抢锁成功，然后线程将当前锁的持有者信息修改为自己。
+在轻量级锁状态下继续锁竞争，没有抢到锁的线程将自旋，即不停地循环判断锁是否能够被成功获取。**获取锁的操作，其实就是通过CAS修改对象头里的锁标志位。先比较当前锁标志位是否为“释放”，如果是则将其设置为“锁定”**，代表抢锁成功，然后线程将当前锁的持有者信息修改为自己。
 
 ##### 重量级锁
 
@@ -443,127 +309,6 @@ class ShareData {
 重量级锁：通过monitor对象中的队列存储线程，但线程进入队列前，还是会先尝试获取锁，如果能获取不到才进入线程等待队列中。
 
 综上所述，synchronized无论处理哪种锁，都是先尝试获取，所以是非公平的。
-
-
-
-###  JMM(Java 内存模型)
-
-**JMM定义了共享内存系统中多线程读写操作行为的规范。**同步的规定：
-
-1. 线程加锁前，必须读取主内存的最新值到自己的工作内存 
-2. 线程解锁前，必须把共享变量的值刷新回主内存 
-3. 加锁解锁使用同一把锁
-
-#### JMM三大特性
-
-**原子性**
-
-实现方式：`synchronized`和原子整型`AtomicInteger`
-
-**可见性**
-
-主要有三种实现可见性的方式：
-
-- volatile
-- synchronized，对一个变量执行解锁操作之前，必须把变量值同步回主内存。
-- final，被 final 关键字修饰的字段在构造器中一旦初始化完成，并且没有发生 this 逃逸（其它线程通过 this 引用访问到初始化了一半的对象），那么其它线程就能看见 final 字段的值。
-
-**有序性**
-
-实现方式：`synchronized`和`volatile`。原理有所区别：`volatile`关键字会禁止指令重排。`synchronized`关键字保证同一时刻只允许一条线程操作。
-
-
-
-### volatile关键字
-
-volatile是JVM提供的轻量级的同步机制。
-
-#### 1.保证可见性
-
-JMM规定，线程对变量的操作（读取赋值等）必须在工作内存中进行。首先将变量从主内存拷贝到自己的工作内存，然后对变量进行操作，操作完成后再将变量写回主内存，不能直接操作主内存中的变量，各个线程中的工作内存中存储着主内存的**变量副本拷贝。**
-
-<a href="https://sm.ms/image/Vd28Ub6kmOpWrIc" target="_blank"><img src="https://s2.loli.net/2022/04/29/Vd28Ub6kmOpWrIc.png" style="zoom:33%;"  ></a>
-
-
-
-这就可能导致线程在主内存中修改了一个变量的值，而另外一个线程还继续使用它在本地内存（寄存器）中的变量值的拷贝，造成**数据的不一致**。要解决这个问题，就需要把变量声明为`volatile`来保证可见性。可见性是一种及时通知机制，当多个线程访问同一个变量时，一个线程修改了这个变量的值，当它写回主内存时，立刻将这次修改通知给其他线程，其他线程能够立即看到修改的值。
-
-`volatile`保证可见性的原理：告诉 JVM，这个变量是共享且不稳定的，每次使用它都到主存中进行读取。
-
-<img src="https://guide-blog-images.oss-cn-shenzhen.aliyuncs.com/2020-8/d49c5557-140b-4abf-adad-8aac3c9036cf.png" alt="volatile关键字的可见性" style="zoom:80%;" />
-
-
-
-#### 2.不保证原子性
-
-原因：线程在各自的工作内存中将变量修改之后，在写回主内存时可能发生写覆盖。
-
-
-
-#### 3.禁止指令重排
-
-以DCL为例：
-
-```java
-public class Singleton {
-
-    private static Singleton uniqueInstance;
-
-    private Singleton() {
-    }
-
-    public static Singleton getUniqueInstance() {
-       //先判断对象是否已经实例过，没有实例化过才进入加锁代码
-        if (uniqueInstance == null) {
-            //类对象加锁
-            synchronized (Singleton.class) {
-                //对象为空才去创建（懒加载）
-                if (uniqueInstance == null) {
-                    uniqueInstance = new Singleton();//非原子操作。注意！！！
-                }
-            }
-        }
-        return uniqueInstance;
-    }
-}
-```
-
-`uniqueInstance = new Singleton()` 不是原子操作，这段代码可以简单分为下面三步执行：
-
-1. 为 uniqueInstance 分配内存空间;
-2. 初始化 uniqueInstance;
-3. 将 uniqueInstance 指向分配的内存地址
-
-处理器在进行重排顺序时会考虑指令之间的数据依赖性，2和3没有数据依赖，所以执行顺序有可能变成 1->3->2。指令重排在单线程环境下不会出现问题，但是在多线程环境下会导致一个线程获得还没有初始化的实例。例如，线程 a 执行了 1 和 3，此时 线程 b 调用 `getUniqueInstance()` 后发现 uniqueInstance 不为空，因此返回 uniqueInstance，但此时 uniqueInstance 还未被初始化，所以就会导致空指针异常。
-
-**使用 volatile 修饰变量就可以禁止 JVM 的指令重排，保证在多线程环境下也能正常运行。**代码修改如下：
-
-```java
- private volatile static Singleton uniqueInstance;
-```
-
-**原理：**
-
-内存屏障（Memory Barrier）又称内存栅栏，是一个CPU指令，他的作用有两个：
-
-1. 保证特定操作的执行顺序
-2. 保证某些变量的内存可见性（利用该特性实现volatile的内存可见性）
-
-编译器和处理器都能执行指令重排优化。如果在指令间插入一条Memory Barrier，则会告诉编译器和CPU， 不管什么指令都不能和这条Memory Barrier指令重排顺序，也就是说**通过插入内存屏障，禁止在内存屏障前后的指令执行重排序优化。**内存屏障另外一个作用是强制刷出各种CPU的缓存数据，因此任何CPU上的线程都能读取到这些数据的最新版本。
-
-<a href="https://sm.ms/image/UGf4MWxl9sA1akX" target="_blank"><img src="https://s2.loli.net/2022/04/30/UGf4MWxl9sA1akX.png" ></a>
-
-
-
-#### 哪些地方用到了volatile？
-
-DCL。
-
-
-
-### **happen-before规则**
-
-Java内存模型规定在某些场景下（一共8条），**前面一个操作的结果对后续操作必须是可见的。**这8条规则成为happen-before规则。
 
 
 
@@ -585,7 +330,7 @@ public final int getAndIncrement() {
 }
 ```
 
-以下代码是 getAndAddInt() 源码，var1 指示对象内存地址，var2 指示该字段相对对象内存地址的偏移，var4 指示操作需要加的数值，这里为 1。通过 getIntVolatile(var1, var2) 得到旧的预期值，通过调用 compareAndSwapInt() 来进行 CAS 比较，如果该字段内存地址中的值等于 var5，那么就更新内存地址为 var1+var2 的变量为 var5+var4。
+以下代码是 getAndAddInt() 源码，var1 指示对象内存地址，var2 指示该字段相对对象内存地址的偏移，var4 指示操作需要加的数值，这里为 1。**通过 getIntVolatile(var1, var2) 得到旧的预期值**，通过调用 compareAndSwapInt() 来进行 CAS 比较，如果该字段内存地址中的值等于 var5，那么就更新内存地址为 var1+var2 的变量为 var5+var4。
 
 可以看到 getAndAddInt() 在一个循环中进行，发生冲突的做法是不断的进行重试。
 
@@ -607,7 +352,7 @@ public final int getAndAddInt(Object var1, long var2, int var4) {
 
 #### 作用
 
-CAS没有加锁，多个线程都可以直接操作共享资源，在实际去修改的时候才去判断能否修改成功。在很多的情况下CAS比synchronized锁更高效。
+CAS没有加锁，多个线程都可以直接**操作**共享资源，在实际去**修改**的时候才去判断能否修改成功。在很多的情况下CAS比synchronized锁更高效。
 
 #### 缺点
 
@@ -774,9 +519,9 @@ ReentrantReadWriteLock的读锁是共享，写锁是独占，写的时候只能�
 
 `ThreadPoolExecutor`其他参数:
 
-1. **`keepAliveTime`**:当线程池中的线程数量大于 `corePoolSize` 的时候，如果这时没有新的任务提交，核心线程外的线程不会立即销毁，而是会等待，直到等待的时间超过了 `keepAliveTime`才会被回收销毁；
-2. **`unit`** : `keepAliveTime` 参数的时间单位。
-3. **`threadFactory`** :executor 创建新线程的时候会用到。
+1. `keepAliveTime`:当线程池中的线程数量大于 `corePoolSize` 的时候，如果这时没有新的任务提交，核心线程外的线程不会立即销毁，而是会等待，直到等待的时间超过了 `keepAliveTime`才会被回收销毁；
+2. `unit` : `keepAliveTime` 参数的时间单位。
+3. `threadFactory` :executor 创建新线程的时候会用到。
 4. **`handler`** :拒绝策略。
 
 #####  `ThreadPoolExecutor` 拒绝策略
@@ -798,6 +543,127 @@ ReentrantReadWriteLock的读锁是共享，写锁是独占，写的时候只能�
 
 
 
+###  JMM(Java 内存模型)
+
+**JMM定义了共享内存系统中多线程读写操作行为的规范。**同步的规定：
+
+1. 线程加锁前，必须读取主内存的最新值到自己的工作内存 
+2. 线程解锁前，必须把共享变量的值刷新回主内存 
+3. 加锁解锁使用同一把锁
+
+#### JMM三大特性
+
+**原子性**
+
+实现方式：`synchronized`和原子整型`AtomicInteger`
+
+**可见性**
+
+主要有三种实现可见性的方式：
+
+- volatile
+- synchronized，对一个变量执行解锁操作之前，必须把变量值同步回主内存。
+- final，被 final 关键字修饰的字段在构造器中一旦初始化完成，并且没有发生 this 逃逸（其它线程通过 this 引用访问到初始化了一半的对象），那么其它线程就能看见 final 字段的值。
+
+**有序性**
+
+实现方式：`synchronized`和`volatile`。原理有所区别：`volatile`关键字会禁止指令重排。`synchronized`关键字保证同一时刻只允许一条线程操作。
+
+
+
+### volatile关键字
+
+volatile是JVM提供的轻量级的同步机制。
+
+#### 1.保证可见性
+
+JMM规定，线程对变量的操作（读取赋值等）必须在工作内存中进行。首先将变量从主内存拷贝到自己的工作内存，然后对变量进行操作，操作完成后再将变量写回主内存，不能直接操作主内存中的变量，各个线程中的工作内存中存储着主内存的**变量副本拷贝。**
+
+<a href="https://sm.ms/image/Vd28Ub6kmOpWrIc" target="_blank"><img src="https://s2.loli.net/2022/04/29/Vd28Ub6kmOpWrIc.png" style="zoom:33%;"  ></a>
+
+
+
+这就可能导致线程在主内存中修改了一个变量的值，而另外一个线程还继续使用它在本地内存（寄存器）中的变量值的拷贝，造成**数据的不一致**。要解决这个问题，就需要把变量声明为`volatile`来保证可见性。可见性是一种及时通知机制，当多个线程访问同一个变量时，一个线程修改了这个变量的值，当它写回主内存时，立刻将这次修改通知给其他线程，其他线程能够立即看到修改的值。
+
+`volatile`保证可见性的原理：告诉 JVM，这个变量是共享且不稳定的，每次使用它都到主存中进行读取。
+
+<img src="https://guide-blog-images.oss-cn-shenzhen.aliyuncs.com/2020-8/d49c5557-140b-4abf-adad-8aac3c9036cf.png" alt="volatile关键字的可见性" style="zoom:80%;" />
+
+
+
+#### 2.不保证原子性
+
+原因：线程在各自的工作内存中将变量修改之后，在写回主内存时可能发生写覆盖。
+
+
+
+#### 3.禁止指令重排
+
+以DCL为例：
+
+```java
+public class Singleton {
+
+    private static Singleton uniqueInstance;
+
+    private Singleton() {
+    }
+
+    public static Singleton getUniqueInstance() {
+       //先判断对象是否已经实例过，没有实例化过才进入加锁代码
+        if (uniqueInstance == null) {
+            //类对象加锁
+            synchronized (Singleton.class) {
+                //对象为空才去创建（懒加载）
+                if (uniqueInstance == null) {
+                    uniqueInstance = new Singleton();//非原子操作。注意！！！
+                }
+            }
+        }
+        return uniqueInstance;
+    }
+}
+```
+
+`uniqueInstance = new Singleton()` 不是原子操作，这段代码可以简单分为下面三步执行：
+
+1. 为 uniqueInstance 分配内存空间;
+2. 初始化 uniqueInstance;
+3. 将 uniqueInstance 指向分配的内存地址
+
+处理器在进行重排顺序时会考虑指令之间的数据依赖性，2和3没有数据依赖，所以执行顺序有可能变成 1->3->2。指令重排在单线程环境下不会出现问题，但是在多线程环境下会导致一个线程获得还没有初始化的实例。例如，线程 a 执行了 1 和 3，此时 线程 b 调用 `getUniqueInstance()` 后发现 uniqueInstance 不为空，因此返回 uniqueInstance，但此时 uniqueInstance 还未被初始化，所以就会导致空指针异常。
+
+**使用 volatile 修饰变量就可以禁止 JVM 的指令重排，保证在多线程环境下也能正常运行。**代码修改如下：
+
+```java
+ private volatile static Singleton uniqueInstance;
+```
+
+**原理：**
+
+内存屏障（Memory Barrier）又称内存栅栏，是一个CPU指令，他的作用有两个：
+
+1. 保证特定操作的执行顺序
+2. 保证某些变量的内存可见性（利用该特性实现volatile的内存可见性）
+
+编译器和处理器都能执行指令重排优化。如果在指令间插入一条Memory Barrier，则会告诉编译器和CPU， 不管什么指令都不能和这条Memory Barrier指令重排顺序，也就是说**通过插入内存屏障，禁止在内存屏障前后的指令执行重排序优化。**内存屏障另外一个作用是强制刷出各种CPU的缓存数据，因此任何CPU上的线程都能读取到这些数据的最新版本。
+
+<a href="https://sm.ms/image/UGf4MWxl9sA1akX" target="_blank"><img src="https://s2.loli.net/2022/04/30/UGf4MWxl9sA1akX.png" ></a>
+
+
+
+#### 哪些地方用到了volatile？
+
+DCL。
+
+
+
+### **happen-before规则**
+
+Java内存模型规定在某些场景下（一共8条），**前面一个操作的结果对后续操作必须是可见的。**这8条规则成为happen-before规则。
+
+
+
 ### ThreadLocal
 
 `ThreadLocal`是一个在多线程中为每一个线程创建单独的变量副本的类。**如果你创建了一个`ThreadLocal`类型的变量，那么访问这个变量的每个线程都会有这个变量的本地副本,** 避免因多线程操作共享变量而导致的数据不一致的情况，保证线程安全**（除了加锁方式以外，保证线程安全的方式）。**
@@ -811,17 +677,52 @@ ReentrantReadWriteLock的读锁是共享，写锁是独占，写的时候只能�
         Thread t = Thread.currentThread();
         ThreadLocalMap map = getMap(t);
         if (map != null)
+            // this指ThreadLocal类的实例对象threadLocal
             map.set(this, value);
         else
             createMap(t, value);
     }
 ```
 
-在这个方法内部我们看到，首先通过getMap(Thread t)方法获取一个和当前线程相关的ThreadLocalMap，然后将变量的值设置到ThreadLocalMap对象中，如果获取到的ThreadLocalMap对象为空，就通过createMap方法创建。
+ThreadLocalMap是ThreadLocal类的一个静态内部类，每个`Thread`中都具备一个`ThreadLocalMap`，而`ThreadLocalMap`可以存储以`threadLocal`为 key ，Object 对象（你所设置的对象）为 value 的键值对。它实现了键值对的set和get，每个线程中都有一个独立的ThreadLocalMap副本，它所存储的值，只能被当前线程读取和修改。ThreadLocal类通过操作每一个线程特有的ThreadLocalMap副本，从而实现了变量访问，在不同线程中的隔离。因为每个线程的变量都是自己特有的，完全不会有并发错误。
 
-线程隔离的秘密，就在于ThreadLocalMap类。**ThreadLocalMap是ThreadLocal类的一个静态内部类，每个`Thread`中都具备一个`ThreadLocalMap`，而`ThreadLocalMap`可以存储以`ThreadLocal`为 key ，Object 对象（你所设置的对象）为 value 的键值对。**它实现了键值对的set和get，**每个线程中都有一个独立的ThreadLocalMap副本，它所存储的值，只能被当前线程读取和修改。ThreadLocal类通过操作每一个线程特有的ThreadLocalMap副本，从而实现了变量访问，在不同线程中的隔离。因为每个线程的变量都是自己特有的，完全不会有并发错误。**
+#### 使用场景
+
+用ThreadLocal保存一些业务内存（用户权限信息，从用户系统获取到的用户名、userId等），这些信息在同一个线程内相同，但是不同的线程使用的业务内容是不相同的。在线程生命周期内，都通过这个静态ThreadLocal实例的get()方法取得自己set过的那个对象，避免了将这个对象作为参数传递的麻烦。
 
 [ThreadLocal底层原理](https://blog.csdn.net/mweibiao/article/details/90111680?spm=1001.2101.3001.6650.8&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-8-90111680-blog-79958414.235%5Ev29%5Epc_relevant_default_base3&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-8-90111680-blog-79958414.235%5Ev29%5Epc_relevant_default_base3&utm_relevant_index=15)
+
+为什么不直接用线程id来作为ThreadLocalMap的key？
+
+无法区分同一个线程的多个threadLocal对象：
+
+```java
+public class Son implements Cloneable{
+    public static void main(String[] args){
+        Thread t = new Thread(new Runnable(){  
+            public void run(){
+            	ThreadLocal<Son> threadLocal1 = new ThreadLocal<>();
+            	threadLocal1.set(new Son());
+            	System.out.println(threadLocal1.get());
+            	ThreadLocal<Son> threadLocal2 = new ThreadLocal<>();
+            	threadLocal2.set(new Son());
+            	System.out.println(threadLocal2.get());
+            }}); 
+        t.start();
+    }
+}
+```
+
+如何区分同一个线程的多个threadLocal对象？
+
+```java
+private final int threadLocalHashCode = nextHashCode();
+private static AtomicInteger nextHashCode = new AtomicInteger();
+private static final int HASH_INCREMENT = 0x61c88647;
+private static int nextHashCode() {
+      return nextHashCode.getAndAdd(HASH_INCREMENT);
+}
+```
 
 
 
@@ -831,17 +732,11 @@ ReentrantReadWriteLock的读锁是共享，写锁是独占，写的时候只能�
 
 线程安全有以下几种实现方式：
 
-#### 1.不可变
+#### synchronized 和 ReentrantLock。
 
-不可变的对象一定是线程安全的，不需要再采取任何的线程安全保障措施。只要一个不可变的对象被正确地构建出来，就永远也不会看到它在多个线程之中处于不一致的状态。
+#### CAS
 
-不可变的类型：final 关键字修饰的基本数据类型，String类型等。
-
-#### 2.synchronized 和 ReentrantLock。
-
-#### 3.CAS
-
-#### 4.无同步方案
+#### 无同步方案
 
 要保证线程安全，并不是一定就要进行同步。如果一个方法本来就不涉及共享数据，那它自然就无须任何同步措施去保证正确性。
 
@@ -878,7 +773,13 @@ public static void main(String[] args) {
 100
 ```
 
-##### 
+#### 不可变
+
+不可变的对象一定是线程安全的，不需要再采取任何的线程安全保障措施。只要一个不可变的对象被正确地构建出来，就永远也不会看到它在多个线程之中处于不一致的状态。
+
+不可变的类型：final 关键字修饰的基本数据类型，String类型等。
+
+
 
 ### CountDownLatch
 
@@ -1130,3 +1031,18 @@ public static void main(String[] args) {
 produce..produce..consume..consume..produce..consume..produce..consume..produce..consume..
 ```
 
+
+
+### 为什么调用 start() 方法时会执行 run() 方法，为什么不能直接调用 run() 方法？
+
+调用 `start()`方法，会启动一个线程并使线程进入了就绪状态，当分配到时间片后就可以开始运行了。 `start()` 会执行线程的相应准备工作，然后自动执行 `run()` 方法的内容，这是真正的多线程工作。
+
+直接执行 `run()` 方法，会把 `run()` 方法当成一个 main 线程下的普通方法去执行，并不会在某个线程中执行它，所以这并不是多线程工作。
+
+
+
+### sleep() 方法和 wait() 方法区别?
+
+- **`sleep()` 方法没有释放锁，而 `wait()` 方法释放了锁** 。
+- `sleep()`方法可以在任何地方使用；`wait()`方法则只能在**同步方法或同步块**中使用；
+- `sleep()`方法执行完成后，线程会自动苏醒。或者可以使用 `wait(long timeout)` 超时后线程会自动苏醒。`wait()` 方法被调用后，线程不会自动苏醒，需要别的线程调用同一个对象上的 `notify()`或者 `notifyAll()` 方法。

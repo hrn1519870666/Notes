@@ -57,15 +57,12 @@
 
 ### 抽象类与接口
 
-1. 定义抽象类的关键字是abstract class，而定义接口的关键字是interface。
-2. 继承抽象类的关键字是extends，而实现接口的关键字是implements。
-3. **抽象类只能单继承，而接口可以多实现。**
-4. 抽象类中可以有构造方法，而接口中不可以有。
-5. 抽象类中可以有成员方法（方法的默认实现），而接口中只可以有抽象方法。
-6. 从jdk 1.8开始，允许接口中出现非抽象方法，但需要使用default修饰。
-7. **抽象类中增加方法可以不影响子类，而接口中增加方法通常都影响子类。**
-8. **抽象类的访问修饰符可以是public、protected、default，而接口只有public。**
-9. **描述特征（会飞的）用接口，描述概念（鸟）用抽象类。**
+1. **抽象类只能单继承，而接口可以多实现。**
+2. 抽象类中可以有构造方法，而接口中不可以有。
+3. 抽象类中可以有成员方法（方法的默认实现），而接口中只可以有抽象方法。
+4. 从**jdk 1.8**开始，允许接口中出现非抽象方法，但需要使用default修饰。
+5. **抽象类的访问修饰符可以是public、protected、default，而接口只有public。**
+6. **描述特征（会飞的）用接口，描述概念（鸟）用抽象类。**
 
 
 
@@ -84,6 +81,63 @@
 3. 子类可以拥有自己属性和方法，即子类可以对父类进行扩展。
 
 **封装和继承都提升了代码的复用性。**
+
+**Java为什么不支持多继承？**
+
+C++因为支持多继承之后带来的菱形继承问题。
+
+假设有类B和类C，它们都继承了相同的类A。类D通过多重继承机制继承了类B和类C。
+
+![img](https://s6.51cto.com/oss/202103/02/c42a05a0bc6ac8f3ff0abf76e918babb.jpg)
+
+因为D同时继承了B和C，并且B和C又同时继承了A，那么，D中就会因为多重继承，继承到两份来自A中的属性和方法。在使用D的时候，如果想要调用一个定义在A中的方法时，就会出现歧义。因为这样的继承关系的形状类似于菱形，因此这个问题被形象地称为菱形继承问题。而C++为了解决菱形继承问题，又引入了虚继承。因为支持多继承，引入了菱形继承问题，又因为要解决菱形继承问题，引入了虚继承。而经过分析，人们发现真正想要使用多继承的情况并不多。
+
+所以在 Java 中，不允许“实现多继承”，即一个类不允许继承多个父类。但是 Java 允许“声明多继承”，即一个类可以实现多个接口，一个接口也可以继承多个父接口。由于接口只允许有方法声明而不允许有方法实现(Java 8之前)，这就避免了 C++ 中多继承的歧义问题。
+
+**Java 8支持多继承**
+
+Java 8中支持了默认函数(default method )，即接口中可以定义一个有方法体的方法了。而又因为Java支持同时实现多个接口，这就相当于通过implements就可以从多个接口中继承到多个方法了，这不就是变相支持了多继承吗？
+
+```java
+public interface Pet { 
+ 
+    public default void eat(){ 
+        System.out.println("Pet Is Eating"); 
+    } 
+} 
+
+public interface Mammal { 
+ 
+    public default void eat(){ 
+        System.out.println("Mammal Is Eating"); 
+    } 
+} 
+```
+
+```java
+public class Cat implements Pet,Mammal { 
+ 
+} 
+```
+
+编译期会报错：
+
+```bash
+error: class Cat inherits unrelated defaults for eat() from types Mammal and Pet 
+```
+
+这时候，就要求Cat类中，必须重写eat()方法。
+
+```java
+public class Cat implements Pet,Mammal { 
+    @Override 
+    public void eat() { 
+        System.out.println("Cat Is Eating"); 
+    } 
+} 
+```
+
+所以可以看到，Java并没有帮我们解决多继承的歧义问题，而是把这个问题留给开发人员，通过重写方法的方式自己解决。
 
 ####  多态
 
@@ -147,74 +201,6 @@ Percussion is playing...
 
 
 **多态的底层原理**
-
-
-
-### BIO,NIO,AIO
-
-#### 阻塞与非阻塞
-
-阻塞与非阻塞指的是**单个线程内遇到同步等待时，是否在原地不做任何操作。**
-
-阻塞指的是遇到同步等待后，一直在原地等待同步方法处理完成。
-
-非阻塞指的是遇到同步等待，不在原地等待，先去做其他的操作，隔一段时间再来观察同步方法是否完成。
-
-
-
-#### 同步与异步
-
-同步和异步指的是**一个执行流程中每个方法是否必须依赖前一个方法完成后才可以继续执行。假设我们的执行流程中，依次是方法一和方法二。**
-
-同步指的是调用一旦开始，调用者必须等到方法调用返回后，才能继续后续的行为。即方法二要等到方法一执行完成后才可以执行。
-
-异步指的是调用立刻返回，调用者不必等待方法内的代码执行结束，就可以继续后续的行为。（具体方法内的代码交由另外的线程执行完成后，可能会进行回调）。即执行方法一的时候，直接交给其他线程执行，不由主线程执行，也就不会阻塞主线程，所以方法二不必等到方法一完成即可开始执行。
-
-
-
-**BIO (Blocking I/O): 同步阻塞 I/O 模型，**应用程序发起 read 调用后，会一直阻塞，直到内核把数据拷贝到用户空间。
-
-<img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6a9e704af49b4380bb686f0c96d33b81~tplv-k3u1fbpfcp-watermark.image" alt="图源：《深入拆解Tomcat & Jetty》" style="zoom:50%;" />
-
-在客户端连接数量不高的情况是没问题的。但是，当面对十万甚至百万级连接的时候，传统的 BIO 模型是无能为力的。
-
-
-
-**NIO (Non-blocking/New I/O): 同步非阻塞 I/O 模型，**也可以看作是 **I/O 多路复用模型**。
-
-我们先来看看 **同步非阻塞 IO 模型**。
-
-<img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/bb174e22dbe04bb79fe3fc126aed0c61~tplv-k3u1fbpfcp-watermark.image" alt="图源：《深入拆解Tomcat & Jetty》" style="zoom:50%;" />
-
-同步非阻塞 IO 模型中，应用程序会一直发起 read 调用，等待数据从内核空间拷贝到用户空间的这段时间里，线程依然是阻塞的，直到在内核把数据拷贝到用户空间。
-
-相比于BIO，NIO通过**轮询**操作，避免了一直阻塞。
-
-但是，这种 IO 模型同样存在问题：**应用程序不断轮询数据是否已经准备好的过程是十分消耗 CPU 资源的。**
-
-这个时候，**I/O 多路复用模型** 就上场了。
-
-<img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/88ff862764024c3b8567367df11df6ab~tplv-k3u1fbpfcp-watermark.image" alt="img" style="zoom:50%;" />
-
-IO 多路复用模型中，线程首先发起 select 调用，询问内核数据是否准备就绪，等内核把数据准备好了，用户线程再发起 read 调用。read 调用的过程（数据从内核空间 -> 用户空间）还是阻塞的。
-
-**IO 多路复用模型，通过减少无效的轮询，减少了对 CPU 资源的消耗。**
-
-NIO 有一个非常重要的**选择器 ( Selector )** 的概念，也可以被称为 **多路复用器**。通过它，只需要一个线程便可以管理多个客户端连接。当客户端数据到了之后，才会为其服务。
-
-![img](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/0f483f2437ce4ecdb180134270a00144~tplv-k3u1fbpfcp-watermark.image)
-
-
-
-**AIO (Asynchronous I/O):又称NIO2， 异步非阻塞的 IO 模型。**
-
-异步 IO 是基于事件和回调机制实现的，也就是应用操作之后会直接返回，不会堵塞在那里，当后台处理完成，操作系统会通知相应的线程进行后续的操作。
-
-<img src="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3077e72a1af049559e81d18205b56fd7~tplv-k3u1fbpfcp-watermark.image" alt="img" style="zoom:50%;" />
-
-总结对比：
-
-<img src="https://images.xiaozhuanlan.com/photo/2020/33b193457c928ae02217480f994814b6.png" alt="img" style="zoom:50%;" />
 
 
 
@@ -418,12 +404,6 @@ System.out.println(l1.getClass() == l2.getClass());
 
 #### 哪里会用到反射？
 
-JDBC：
-
-```java
-class.forName('com.mysql.jdbc.Driver.class');   //加载MySQL的驱动类
-```
-
 Spring 通过 XML 装载 Bean 的过程：
 
 1. 将程序内所有 XML 配置文件加载进内存；
@@ -484,3 +464,11 @@ public class MyException extends RuntimeException{
     }
 }
 ```
+
+[Java异常体系](https://www.jianshu.com/p/49d2c3975c56)
+
+
+
+Java8
+
+Java最新技术（JDK新特性）

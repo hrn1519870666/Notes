@@ -590,3 +590,9 @@ redis 实现高并发主要依靠主从架构，单主用来写入数据，单�
 **强一致性（效率低）**
 
 2PC、Paxos、Raft
+
+
+
+[Redis Cluster](https://www.cnblogs.com/wzh2010/p/15886799.html)
+
+[Redis集群通信：gossip协议](https://zq99299.github.io/note-book/cache-pdp/redis/032.html#%E8%8A%82%E7%82%B9%E9%97%B4%E7%9A%84%E5%86%85%E9%83%A8%E9%80%9A%E4%BF%A1%E6%9C%BA%E5%88%B6)
